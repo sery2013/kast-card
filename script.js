@@ -114,13 +114,18 @@ document.addEventListener("DOMContentLoaded", () => {
         const el = document.getElementById(id);
         if (el) { el.addEventListener("input", () => {}); }
     });
-    
     if(typeof flatpickr !== 'undefined') {
         flatpickr("#date", {
             dateFormat: "m/d/Y",
             altInput: true,
             altFormat: "F j, Y",
-            theme: "dark"
+            theme: "dark",
+            locale: {
+                months: {
+                    shorthand: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+                    longhand: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+                }
+            }
         });
     }
 });
@@ -142,157 +147,215 @@ function renderAll(ctx, canvas, avatarImg) {
     ctx.save();
     ctx.translate(glitchX, glitchY);
 
-    // 1. ФОН - ГЛУБОКИЙ ЧЕРНЫЙ
-    ctx.fillStyle = '#000000';
+    ctx.fillStyle = '#000000'; // ЧИСТЫЙ ЧЕРНЫЙ
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Бирюзовое свечение (Bloom эффект)
-    const bloomGrad = ctx.createRadialGradient(canvas.width, 0, 0, canvas.width, 0, 500);
-    bloomGrad.addColorStop(0, 'rgba(0, 242, 255, 0.15)');
-    bloomGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-    ctx.fillStyle = bloomGrad;
+    const topGrad = ctx.createRadialGradient(canvas.width, 0, 50, canvas.width, 0, 400);
+    topGrad.addColorStop(0, 'rgba(0, 242, 255, 0.15)'); // БИРЮЗОВЫЙ
+    topGrad.addColorStop(1, 'rgba(0, 242, 255, 0)');
+    ctx.fillStyle = topGrad;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // 2. БИРЮЗОВЫЕ ЧАСТИЦЫ
+    const bottomGrad = ctx.createRadialGradient(0, canvas.height, 50, 0, canvas.height, 500);
+    bottomGrad.addColorStop(0, 'rgba(0, 242, 255, 0.1)'); // БИРЮЗОВЫЙ
+    bottomGrad.addColorStop(1, 'rgba(0, 242, 255, 0)');
+    ctx.fillStyle = bottomGrad;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
     particles.forEach(p => {
         p.y += p.speed;
         if (p.y > 400) p.y = -p.length;
         const g = ctx.createLinearGradient(0, p.y, 0, p.y + p.length);
         g.addColorStop(0, 'transparent');
-        g.addColorStop(1, `rgba(0, 242, 255, ${p.opacity})`);
+        g.addColorStop(1, `rgba(0, 242, 255, ${p.opacity})`); // БИРЮЗОВЫЙ
         ctx.strokeStyle = g;
         ctx.lineWidth = 1;
         ctx.beginPath();
         ctx.moveTo(p.x, p.y);
         ctx.lineTo(p.x, p.y + p.length);
         ctx.stroke();
+        ctx.fillStyle = `rgba(0, 242, 255, ${p.opacity * 2})`; // БИРЮЗОВЫЙ
+        ctx.beginPath(); ctx.arc(p.x, p.y + p.length, 1, 0, Math.PI * 2); ctx.fill();
     });
 
-    // 3. АВАТАР
+    ctx.save();
+    ctx.fillStyle = "rgba(0, 242, 255, 0.03)"; // БИРЮЗОВЫЕ ТОЧКИ
+    for (let x = 0; x < canvas.width; x += 30) {
+        for (let y = 0; y < canvas.height; y += 30) {
+            ctx.beginPath(); ctx.arc(x, y, 0.8, 0, Math.PI * 2); ctx.fill();
+        }
+    }
+    ctx.fillStyle = "rgba(0, 242, 255, 0.04)"; // БИРЮЗОВЫЕ СИМВОЛЫ
+    ctx.font = "bold 40px Fredoka";
+    const symbols = ["( )", "KAST", "*", "◇"];
+    for (let i = 0; i < 10; i++) {
+        for (let j = 0; j < 6; j++) {
+            ctx.save();
+            ctx.translate(i * 120, j * 90);
+            ctx.rotate(-Math.PI / 10);
+            ctx.fillText(symbols[(i + j) % symbols.length], 0, 0);
+            ctx.restore();
+        }
+    }
+    ctx.restore();
+
     const avX = 25, avY = 70, avS = 140;
     ctx.save();
-    ctx.strokeStyle = "rgba(0, 242, 255, 0.4)";
-    ctx.lineWidth = 2;
+    ctx.strokeStyle = "rgba(0, 242, 255, 0.7)"; // БИРЮЗОВАЯ РАМКА АВАТАРА
     ctx.strokeRect(avX, avY, avS, avS);
 
     if (avatarImg) {
+        if (isGenerating && Math.random() > 0.85) {
+            ctx.globalAlpha = 0.5;
+            ctx.drawImage(avatarImg, avX + 5, avY, avS - 2, avS - 2);
+            ctx.globalAlpha = 1;
+        }
         ctx.drawImage(avatarImg, avX + 1, avY + 1, avS - 2, avS - 2);
     } else {
-        ctx.fillStyle = "#050505";
+        ctx.fillStyle = "#0a0a0a";
         ctx.fillRect(avX + 1, avY + 1, avS - 2, avS - 2);
     }
     ctx.restore();
 
-    // 4. QR-КОД (Белый/Черный для сканирования)
-    const qrSize = 120;
-    const qrX = avX + (avS - qrSize) / 2;
-    const qrY = 245;
-    const qrImg = new Image();
-    qrImg.crossOrigin = "anonymous";
-    qrImg.src = "https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=https://kast.xyz";
-    
-    if (qrImg.complete || qrImg.width > 0) {
-        ctx.fillStyle = "white";
-        ctx.beginPath();
-        ctx.roundRect(qrX - 5, qrY - 5, qrSize + 10, qrSize + 10, 8);
-        ctx.fill();
-        ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize);
-        
-        ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
-        ctx.font = "10px Fredoka";
-        ctx.textAlign = "center";
-        ctx.fillText("KAST.XYZ", qrX + qrSize/2, qrY + qrSize + 15);
-    }
-
-    // 5. ТЕКСТОВЫЕ БЛОКИ
     ctx.save();
-    ctx.textAlign = "left";
     ctx.fillStyle = "white";
-    ctx.font = "bold 32px Fredoka";
+    ctx.font = "bold 30px Fredoka";
+    ctx.shadowColor = "rgba(0, 242, 255, 0.6)"; // БИРЮЗОВОЕ СВЕЧЕНИЕ ЗАГОЛОВКА
+    ctx.shadowBlur = 15;
     ctx.fillText("USER CARD", 25, 45);
+    ctx.restore();
+
+    ctx.save();
+    const lineGrad = ctx.createLinearGradient(275, 0, 765, 0);
+    lineGrad.addColorStop(0, "rgba(0, 242, 255, 0)");
+    lineGrad.addColorStop(0.5, "rgba(0, 242, 255, 0.5)"); // БИРЮЗОВАЯ ЛИНИЯ
+    lineGrad.addColorStop(1, "rgba(0, 242, 255, 0)");
+    ctx.strokeStyle = lineGrad;
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(275, 35); ctx.lineTo(765, 35); ctx.stroke();
+    ctx.restore();
 
     const username = document.getElementById("username").value || "sery2013";
     const date = document.getElementById("date").value || "03/12/2026";
     const bioText = document.getElementById("userBio").value || "Web3 Explorer & Content Enthusiast";
 
-    // Поле имени (Бирюзовая обводка)
-    ctx.strokeStyle = "rgba(0, 242, 255, 0.2)";
+    ctx.save();
+    ctx.strokeStyle = "rgba(0, 242, 255, 0.3)"; // БИРЮЗОВЫЕ ПОЛЯ
     ctx.strokeRect(185, 65, 580, 50);
-    ctx.fillStyle = "white"; ctx.font = "bold 26px Fredoka";
-    ctx.fillText(username, 205, 101);
+    ctx.fillStyle = "white"; ctx.font = "bold 24px Fredoka";
+    ctx.fillText(username, 205, 100);
 
-    // Дата присоединения
-    ctx.fillStyle = "#00f2ff"; ctx.font = "16px Fredoka";
-    ctx.fillText("Joined: " + date, 205, 150);
+    ctx.strokeStyle = "rgba(0, 242, 255, 0.2)";
+    ctx.strokeRect(185, 125, 580, 40);
+    ctx.fillStyle = "#00f2ff"; ctx.font = "18px Fredoka"; // ТЕКСТ ДАТЫ БИРЮЗОВЫЙ
+    ctx.fillText("Joined: " + date, 205, 152);
+    ctx.restore();
 
-    // РОЛИ (Тэги в бирюзово-черной гамме)
+    ctx.save();
     const selectedRoles = Array.from(document.querySelectorAll(".roles input[type='checkbox']")).filter(chk => chk.checked).map(chk => chk.value);
-    let xStart = 185, yStart = 175;
+    let xStart = 185, yStart = 180;
     selectedRoles.forEach(role => {
+        let c1, c2;
+        // Цвета ролей теперь в бирюзово-белой гамме
+        if (role === "@Staff") { c1 = "#004e52"; c2 = "#00f2ff"; }
+        else if (role === "@KAST Evangelist") { c1 = "#005a5d"; c2 = "#00f2ff"; }
+        else if (role === "@OG") { c1 = "#006a6e"; c2 = "#ffffff"; }
+        else if (role === "@Kah-ching") { c1 = "#005558"; c2 = "#00f2ff"; }
+        else if (role === "@KAST Creator") { c1 = "#006063"; c2 = "#ffffff"; }
+        else { c1 = "#002a2c"; c2 = "#00f2ff"; }
+        
         ctx.font = "bold 13px Fredoka";
         const bWidth = ctx.measureText(role).width + 26;
-        if(xStart + bWidth > canvas.width - 20) { xStart = 185; yStart += 32; }
-        
-        const g = ctx.createLinearGradient(xStart, yStart, xStart, yStart + 24);
-        g.addColorStop(0, '#00f2ff'); 
-        g.addColorStop(1, '#008c95');
+        if(xStart + bWidth > canvas.width - 20) { xStart = 185; yStart += 35; }
+        const g = ctx.createLinearGradient(xStart, yStart, xStart, yStart + 25);
+        g.addColorStop(0, c2); g.addColorStop(1, c1);
         ctx.fillStyle = g;
-        ctx.beginPath(); ctx.roundRect(xStart, yStart, bWidth, 24, 6); ctx.fill();
-        ctx.fillStyle = "black";
-        ctx.fillText(role, xStart + 13, yStart + 16);
+        ctx.beginPath(); ctx.roundRect(xStart, yStart, bWidth, 25, 6); ctx.fill();
+        ctx.fillStyle = (c2 === "#ffffff") ? "black" : "white"; 
+        ctx.fillText(role, xStart + 13, yStart + 17);
         xStart += bWidth + 10;
     });
+    ctx.restore();
 
-    // БИО
+    ctx.save();
     const bioY = yStart + 45;
-    ctx.fillStyle = "rgba(255, 255, 255, 0.05)";
-    ctx.fillRect(185, bioY, 580, 45);
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
+    ctx.strokeStyle = "rgba(0, 242, 255, 0.3)"; // БИРЮЗОВОЕ ПОЛЕ БИО
     ctx.strokeRect(185, bioY, 580, 45);
-    ctx.fillStyle = "#ffffff"; ctx.font = "italic 15px Fredoka";
+    ctx.fillStyle = "rgba(0, 242, 255, 0.05)"; 
+    ctx.fillRect(185, bioY, 580, 45);
+    ctx.fillStyle = "#eee"; ctx.font = "italic 16px Fredoka";
     ctx.fillText(bioText, 205, bioY + 28);
+    ctx.restore();
 
-    // 6. СОЦИАЛЬНЫЕ ИКОНКИ
-    const sY = bioY + 100;
-    const drawSocial = (x, y, label) => {
-        ctx.fillStyle = "#00f2ff";
-        ctx.beginPath(); ctx.arc(x, y-5, 6, 0, Math.PI*2); ctx.fill();
-        ctx.fillStyle = "white";
-        ctx.font = "14px Fredoka";
-        ctx.fillText(label, x + 15, y);
+    ctx.save();
+    const sY = bioY + 105;
+    ctx.font = "14px Fredoka"; ctx.fillStyle = "white";
+    const drawIcon = (x, y, color, type) => {
+        ctx.save(); ctx.translate(x, y - 12); ctx.fillStyle = color;
+        if (type === 'tg') {
+            ctx.beginPath(); ctx.moveTo(0, 7); ctx.lineTo(15, 0); ctx.lineTo(13, 15); ctx.lineTo(9, 10); ctx.lineTo(9, 14); ctx.lineTo(7, 10); ctx.fill();
+        } else if (type === 'x') {
+            ctx.font = "bold 15px Arial"; ctx.fillStyle = "white"; ctx.fillText("𝕏", 0, 13);
+        } else if (type === 'dc') {
+            ctx.beginPath(); ctx.arc(8, 7, 7, 0, Math.PI * 2); ctx.fill();
+        }
+        ctx.restore();
     };
-    drawSocial(185, sY, "Twitter");
-    drawSocial(285, sY, "Telegram");
-    drawSocial(395, sY, "Discord");
-    ctx.fillStyle = "rgba(255,255,255,0.7)";
+    drawIcon(185, sY, "#00f2ff", 'x'); ctx.fillText("Twitter", 207, sY); // ИКОНКИ БИРЮЗОВЫЕ
+    drawIcon(285, sY, "#00f2ff", 'tg'); ctx.fillText("Telegram", 307, sY);
+    drawIcon(395, sY, "#00f2ff", 'dc'); ctx.fillText("Discord", 417, sY);
     ctx.fillText("🌐 kast.xyz", 505, sY);
+    ctx.restore();
 
-    // 7. ЛОГОТИП KAST (Белый с бирюзовым свечением)
+    ctx.save();
     ctx.textAlign = "right";
-    ctx.fillStyle = "#FFFFFF"; ctx.font = "bold 50px Fredoka";
-    ctx.shadowColor = "#00f2ff"; 
-    ctx.shadowBlur = 10 + Math.sin(Date.now() / 600) * 5;
+    const pulse = 10 + Math.sin(Date.now() / 500) * 8;
+    const kastGrad = ctx.createLinearGradient(700, 360, 760, 360);
+    kastGrad.addColorStop(0, "#ffffff"); kastGrad.addColorStop(1, "#00f2ff"); // ЛОГО БЕЛО-БИРЮЗОВОЕ
+    ctx.fillStyle = kastGrad; ctx.font = "bold 50px Fredoka";
+    ctx.shadowColor = "#00f2ff"; ctx.shadowBlur = pulse;
     ctx.fillText("KAST", 760, 360);
     ctx.restore();
 
-    // 8. БЛИК
+    const qrSrc = "https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=https://kast.xyz";
+    const qrImg = new Image();
+    qrImg.crossOrigin = "anonymous";
+    qrImg.src = qrSrc;
+    if (qrImg.complete) {
+        ctx.drawImage(qrImg, 35, 245, 120, 120);
+        ctx.fillStyle = "rgba(0,242,255,0.3)"; ctx.font = "10px Fredoka"; ctx.textAlign = "center";
+        ctx.fillText("kast.xyz", 95, 380);
+    }
+
+    if (isGenerating && Math.random() > 0.9) {
+        ctx.fillStyle = "rgba(0, 242, 255, 0.15)";
+        ctx.fillRect(0, Math.random() * 400, 800, Math.random() * 40);
+    }
+
     reflectionPos += 4; 
     if (reflectionPos > canvas.width + 500) reflectionPos = -500;
     ctx.save();
-    const reflectGrad = ctx.createLinearGradient(reflectionPos, 0, reflectionPos + 200, 400);
+    const reflectGrad = ctx.createLinearGradient(reflectionPos, 0, reflectionPos + 300, 400);
     reflectGrad.addColorStop(0, "rgba(255, 255, 255, 0)");
-    reflectGrad.addColorStop(0.5, "rgba(0, 242, 255, 0.03)"); 
+    reflectGrad.addColorStop(0.5, "rgba(255, 255, 255, 0.1)"); 
     reflectGrad.addColorStop(1, "rgba(255, 255, 255, 0)");
     ctx.fillStyle = reflectGrad;
+    ctx.globalCompositeOperation = "overlay"; 
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.restore();
 
-    // Линия сканирования (Бирюзовая)
+    ctx.restore();
+
     if (isGenerating) {
-        scanLineY += 6; 
+        scanLineY += 8; 
         if (scanLineY > 400) scanLineY = 0;
         ctx.save();
-        ctx.strokeStyle = "#00f2ff";
+        let scanGrad = ctx.createLinearGradient(0, scanLineY - 40, 0, scanLineY);
+        scanGrad.addColorStop(0, "transparent");
+        scanGrad.addColorStop(1, "rgba(0, 242, 255, 0.4)"); // СКАНЕР БИРЮЗОВЫЙ
+        ctx.fillStyle = scanGrad;
+        ctx.fillRect(0, scanLineY - 40, canvas.width, 40);
+        ctx.strokeStyle = "#00f2ff"; // ЛИНИЯ СКАНЕРА БИРЮЗОВАЯ
         ctx.lineWidth = 2;
         ctx.shadowBlur = 15;
         ctx.shadowColor = "#00f2ff";
@@ -305,12 +368,11 @@ function downloadCard() {
     playSound("soundClick");
     const canvas = document.getElementById("cardCanvas");
     const link = document.createElement("a");
-    link.download = "kast-card.png";
+    link.download = "kast-animated-card.png";
     link.href = canvas.toDataURL("image/png");
     link.click();
 }
 
-// ФОН САЙТА - ЧИСТЫЙ ЧЕРНЫЙ С БИРЮЗОВЫМИ ЛИНИЯМИ
 (function() {
     const bgCanvas = document.getElementById("bgCanvas");
     if (!bgCanvas) return;
@@ -320,24 +382,40 @@ function downloadCard() {
     function init() {
         bgCanvas.width = window.innerWidth;
         bgCanvas.height = window.innerHeight;
-        bgLines = Array.from({ length: 60 }, () => ({
+        bgLines = Array.from({ length: 80 }, () => ({
             x: Math.random() * bgCanvas.width,
             y: Math.random() * bgCanvas.height,
-            speed: Math.random() * 0.6 + 0.2,
-            len: Math.random() * 100 + 40,
-            op: Math.random() * 0.12
+            speed: Math.random() * 1 + 0.5,
+            len: Math.random() * 100 + 50,
+            op: Math.random() * 0.3
         }));
     }
 
     function animate() {
-        bgCtx.fillStyle = '#000000';
+        bgCtx.fillStyle = '#000000'; // ФОН СТРАНИЦЫ ЧЕРНЫЙ
         bgCtx.fillRect(0, 0, bgCanvas.width, bgCanvas.height);
         
         bgLines.forEach(l => {
-            l.y += l.speed;
-            if (l.y > bgCanvas.height) { l.y = -l.len; l.x = Math.random() * bgCanvas.width; }
-            bgCtx.strokeStyle = `rgba(0, 242, 255, ${l.op})`;
-            bgCtx.lineWidth = 1;
+            let dx = mouseX - l.x;
+            let dy = mouseY - l.y;
+            let dist = Math.sqrt(dx*dx + dy*dy);
+            let currentSpeed = l.speed;
+            
+            if (dist < 250) {
+                currentSpeed += (1 - dist/250) * 6;
+            }
+
+            l.y += currentSpeed;
+            if (l.y > bgCanvas.height) { 
+                l.y = -l.len; 
+                l.x = Math.random() * bgCanvas.width; 
+            }
+            
+            let g = bgCtx.createLinearGradient(0, l.y, 0, l.y + l.len);
+            g.addColorStop(0, 'transparent');
+            g.addColorStop(1, `rgba(0, 242, 255, ${l.op})`); // ЛИНИИ ФОНА БИРЮЗОВЫЕ
+            bgCtx.strokeStyle = g;
+            bgCtx.lineWidth = 1.2;
             bgCtx.beginPath(); 
             bgCtx.moveTo(l.x, l.y); 
             bgCtx.lineTo(l.x, l.y + l.len); 
