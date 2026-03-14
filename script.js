@@ -302,7 +302,7 @@ function renderAll(ctx, canvas, avatarImg) {
     drawIcon(185, sY, "white", 'x'); ctx.fillText("Twitter", 207, sY);
     drawIcon(285, sY, "#888888", 'tg'); ctx.fillText("Telegram", 307, sY);
     drawIcon(395, sY, "#888888", 'dc'); ctx.fillText("Discord", 417, sY);
-    ctx.fillText("🌐 getkast.xyz", 505, sY);
+    ctx.fillText("🌐 kast.xyz", 505, sY);
     ctx.restore();
 
     ctx.save();
