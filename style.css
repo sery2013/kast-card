@@ -1,3 +1,14 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    overflow-x: hidden;
+    width: 100%;
+}
+
 body {
     background: linear-gradient(135deg, #1a1a1a 0%, #3a3a3a 50%, #1a1a1a 100%);
     background-attachment: fixed;
@@ -8,6 +19,9 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    overflow-x: hidden;
+    width: 100%;
+    position: relative;
 }
 
 .title-link {
@@ -101,6 +115,10 @@ body {
     margin: 20px;
     flex: 1;
     flex-wrap: wrap;
+    width: 100%;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .panel {
@@ -286,6 +304,7 @@ canvas#cardCanvas {
     margin-top: auto;
     background: rgba(10, 10, 13, 0.8);
     border-top: 1px solid rgba(150, 150, 150, 0.1);
+    width: 100%;
 }
 
 .footer p { margin: 5px 0; font-size: 14px; color: rgba(255, 255, 255, 0.6); }
@@ -309,26 +328,85 @@ canvas#cardCanvas {
     100% { box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 0px rgba(150, 150, 150, 0); }
 }
 
-input[type="date"]::-webkit-calendar-picker-indicator { display: none; }
+input[type="date"]::-webkit-calendar-picker-indicator { 
+    display: none; 
+}
 
 .flatpickr-input[type="text"] {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='18' rx='2' ry='2'%3E%3C/rect%3E%3Cline x1='16' y1='2' x2='16' y2='6'%3E%3C/line%3E%3Cline x1='8' y1='2' x2='8' y2='6'%3E%3C/line%3E%3Cline x1='3' y1='10' x2='21' y2='10'%3E%3C/line%3E%3C/svg%3E") !important;
     background-repeat: no-repeat !important;
     background-position: right 12px center !important;
     background-size: 18px !important;
+    cursor: pointer !important;
 }
 
+/* СВЕТЛЫЙ КАЛЕНДАРЬ */
 .flatpickr-calendar {
-    background: #1e1e23 !important;
+    background: #ffffff !important;
     border: 1px solid rgba(150, 150, 150, 0.4) !important;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.8) !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3) !important;
+    color: #333 !important;
+    z-index: 9999 !important;
+}
+
+.flatpickr-months .flatpickr-month {
+    background: #f5f5f5 !important;
+    color: #333 !important;
+    fill: #333 !important;
+}
+
+.flatpickr-months .flatpickr-prev-month,
+.flatpickr-months .flatpickr-next-month {
+    color: #333 !important;
+    fill: #333 !important;
+    cursor: pointer !important;
+}
+
+.flatpickr-months .flatpickr-prev-month:hover,
+.flatpickr-months .flatpickr-next-month:hover {
+    color: #666 !important;
+    fill: #666 !important;
+}
+
+.flatpickr-weekdays {
+    background: #f5f5f5 !important;
+}
+
+.flatpickr-weekday {
+    color: #333 !important;
+}
+
+.flatpickr-day {
+    color: #333 !important;
+    border-color: transparent !important;
+    cursor: pointer !important;
+}
+
+.flatpickr-day:hover {
+    background: rgba(150, 150, 150, 0.2) !important;
+    border-color: transparent !important;
 }
 
 .flatpickr-day.selected {
     background: #9a9a9a !important;
     border-color: #9a9a9a !important;
+    color: white !important;
 }
 
-.flatpickr-day:hover {
-    background: rgba(150, 150, 150, 0.2) !important;
+.flatpickr-day.today {
+    border-color: #9a9a9a !important;
+    color: #9a9a9a !important;
+}
+
+.flatpickr-day.today:hover {
+    background: #9a9a9a !important;
+    color: white !important;
+}
+
+.flatpickr-current-month .flatpickr-monthDropdown-months {
+    color: #333 !important;
+}
+
+.flatpickr-current-month input.cur-year {
+    color: #333 !important;
 }
