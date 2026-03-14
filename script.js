@@ -8,11 +8,13 @@ let reflectionPos = -500;
 let mouseX = 0;
 let mouseY = 0;
 
+// Отслеживание мыши для параллакса фона
 window.addEventListener('mousemove', (e) => {
     mouseX = e.clientX;
     mouseY = e.clientY;
 });
 
+// Функция воспроизведения звуков
 function playSound(id, stop = false) {
     const s = document.getElementById(id);
     if (!s) return;
@@ -24,6 +26,7 @@ function playSound(id, stop = false) {
     }
 }
 
+// Инициализация падающих частиц внутри карточки
 function initDigitalFlow() {
     particles = [];
     for (let i = 0; i < 50; i++) {
@@ -37,6 +40,7 @@ function initDigitalFlow() {
     }
 }
 
+// Эффект наклона карточки (Tilt)
 function initTilt() {
     const canvas = document.getElementById("cardCanvas");
     if (!canvas) return;
@@ -57,6 +61,7 @@ function initTilt() {
     });
 }
 
+// Основная функция генерации
 function generateCard() {
     playSound("soundClick");
     playSound("soundScan");
@@ -70,6 +75,7 @@ function generateCard() {
     canvas.classList.add("canvas-generating");
     scanLineY = 0;
 
+    // Имитация процесса сканирования
     setTimeout(() => {
         isGenerating = false;
         canvas.classList.remove("canvas-generating");
@@ -108,12 +114,14 @@ function generateCard() {
     initTilt();
 }
 
+// Инициализация при загрузке (Flatpickr и инпуты)
 document.addEventListener("DOMContentLoaded", () => {
     const inputs = ["username", "userBio"];
     inputs.forEach(id => {
         const el = document.getElementById(id);
         if (el) { el.addEventListener("input", () => {}); }
     });
+    
     if(typeof flatpickr !== 'undefined') {
         flatpickr("#date", {
             dateFormat: "m/d/Y",
@@ -130,6 +138,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
+// ГЛАВНАЯ ФУНКЦИЯ ОТРИСОВКИ (Здесь все твои элементы + исправления)
 function renderAll(ctx, canvas, avatarImg) {
     ctx.textAlign = "left";
     ctx.textBaseline = "alphabetic";
@@ -137,6 +146,7 @@ function renderAll(ctx, canvas, avatarImg) {
     ctx.shadowColor = "transparent";
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
+    // Эффект глитча при генерации
     let glitchX = 0;
     let glitchY = 0;
     if (isGenerating && Math.random() > 0.8) {
@@ -147,25 +157,18 @@ function renderAll(ctx, canvas, avatarImg) {
     ctx.save();
     ctx.translate(glitchX, glitchY);
 
-    // ЧЕРНЫЙ ФОН КАРТОЧКИ
+    // --- 1. ФОН КАРТОЧКИ (KAST STYLE) ---
     ctx.fillStyle = '#0a0a0a';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Мягкий изумрудный градиент в углу
+    // Мягкое изумрудное свечение сверху
     const topGrad = ctx.createRadialGradient(canvas.width, 0, 50, canvas.width, 0, 450);
     topGrad.addColorStop(0, 'rgba(0, 255, 65, 0.12)');
     topGrad.addColorStop(1, 'rgba(0, 255, 65, 0)');
     ctx.fillStyle = topGrad;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Золотой блик внизу
-    const bottomGrad = ctx.createRadialGradient(0, canvas.height, 50, 0, canvas.height, 500);
-    bottomGrad.addColorStop(0, 'rgba(255, 210, 31, 0.05)');
-    bottomGrad.addColorStop(1, 'rgba(255, 210, 31, 0)');
-    ctx.fillStyle = bottomGrad;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // ИЗУМРУДНЫЕ ЧАСТИЦЫ
+    // --- 2. ЧАСТИЦЫ ---
     particles.forEach(p => {
         p.y += p.speed;
         if (p.y > 400) p.y = -p.length;
@@ -180,17 +183,7 @@ function renderAll(ctx, canvas, avatarImg) {
         ctx.stroke();
     });
 
-    // Декоративная сетка
-    ctx.save();
-    ctx.fillStyle = "rgba(255, 255, 255, 0.02)";
-    for (let x = 0; x < canvas.width; x += 40) {
-        for (let y = 0; y < canvas.height; y += 40) {
-            ctx.beginPath(); ctx.arc(x, y, 0.6, 0, Math.PI * 2); ctx.fill();
-        }
-    }
-    ctx.restore();
-
-    // Аватар с зеленой рамкой
+    // --- 3. АВАТАР ---
     const avX = 25, avY = 70, avS = 140;
     ctx.save();
     ctx.strokeStyle = "rgba(0, 255, 65, 0.5)";
@@ -205,40 +198,59 @@ function renderAll(ctx, canvas, avatarImg) {
     }
     ctx.restore();
 
-    // Заголовок
+    // --- 4. QR-КОД (ВОССТАНОВЛЕН) ---
+    const qrSize = 120;
+    const qrX = avX + (avS - qrSize) / 2;
+    const qrY = 245;
+    const qrImg = new Image();
+    qrImg.crossOrigin = "anonymous";
+    qrImg.src = "https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=https://kast.xyz";
+    
+    if (qrImg.complete || qrImg.width > 0) {
+        ctx.fillStyle = "white"; // Белая подложка для сканнера
+        ctx.beginPath();
+        ctx.roundRect(qrX - 5, qrY - 5, qrSize + 10, qrSize + 10, 8);
+        ctx.fill();
+        ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize);
+        
+        ctx.fillStyle = "rgba(0, 255, 65, 0.6)";
+        ctx.font = "10px Fredoka";
+        ctx.textAlign = "center";
+        ctx.fillText("kast.xyz", qrX + qrSize/2, qrY + qrSize + 15);
+    }
+
+    // --- 5. ТЕКСТ И ИНФОРМАЦИЯ ---
     ctx.save();
+    ctx.textAlign = "left";
     ctx.fillStyle = "white";
     ctx.font = "bold 30px Fredoka";
-    ctx.shadowColor = "rgba(0, 255, 65, 0.5)";
-    ctx.shadowBlur = 10;
     ctx.fillText("USER CARD", 25, 45);
-    ctx.restore();
 
-    // Данные пользователя
     const username = document.getElementById("username").value || "sery2013";
     const date = document.getElementById("date").value || "03/12/2026";
     const bioText = document.getElementById("userBio").value || "Web3 Explorer & Content Enthusiast";
 
-    ctx.save();
+    // Username Box
     ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
     ctx.strokeRect(185, 65, 580, 50);
     ctx.fillStyle = "white"; ctx.font = "bold 24px Fredoka";
     ctx.fillText(username, 205, 100);
 
+    // Joined Date
     ctx.fillStyle = "#00ff41"; ctx.font = "16px Fredoka";
     ctx.fillText("Joined: " + date, 205, 150);
-    ctx.restore();
 
-    // Роли
-    ctx.save();
+    // РОЛИ (Тэги)
     const selectedRoles = Array.from(document.querySelectorAll(".roles input[type='checkbox']")).filter(chk => chk.checked).map(chk => chk.value);
     let xStart = 185, yStart = 175;
     selectedRoles.forEach(role => {
-        let c1 = "#00ff41", c2 = "#004d0a"; // По умолчанию зеленые
+        let c1 = "#00ff41", c2 = "#004d0a";
         if (role === "@OG" || role === "@Kah-ching") { c1 = "#ffd21f"; c2 = "#554400"; }
         
         ctx.font = "bold 13px Fredoka";
         const bWidth = ctx.measureText(role).width + 26;
+        if(xStart + bWidth > canvas.width - 20) { xStart = 185; yStart += 32; }
+        
         const g = ctx.createLinearGradient(xStart, yStart, xStart, yStart + 24);
         g.addColorStop(0, c1); g.addColorStop(1, c2);
         ctx.fillStyle = g;
@@ -247,10 +259,8 @@ function renderAll(ctx, canvas, avatarImg) {
         ctx.fillText(role, xStart + 13, yStart + 16);
         xStart += bWidth + 10;
     });
-    ctx.restore();
 
-    // Био
-    ctx.save();
+    // БИО
     const bioY = yStart + 45;
     ctx.fillStyle = "rgba(255, 255, 255, 0.03)";
     ctx.fillRect(185, bioY, 580, 45);
@@ -258,10 +268,25 @@ function renderAll(ctx, canvas, avatarImg) {
     ctx.strokeRect(185, bioY, 580, 45);
     ctx.fillStyle = "#ccc"; ctx.font = "italic 15px Fredoka";
     ctx.fillText(bioText, 205, bioY + 28);
-    ctx.restore();
 
-    // Логотип KAST в твоем золоте
-    ctx.save();
+    // --- 6. СОЦИАЛЬНЫЕ ИКОНКИ (ВОССТАНОВЛЕНЫ) ---
+    const sY = bioY + 100;
+    ctx.font = "14px Fredoka"; ctx.textAlign = "left";
+
+    const drawSocial = (x, y, label, color) => {
+        ctx.fillStyle = color;
+        ctx.beginPath(); ctx.arc(x, y-5, 8, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = "white";
+        ctx.fillText(label, x + 15, y);
+    };
+
+    drawSocial(185, sY, "Twitter", "#1da1f2");
+    drawSocial(285, sY, "Telegram", "#0088cc");
+    drawSocial(395, sY, "Discord", "#5865f2");
+    ctx.fillStyle = "white";
+    ctx.fillText("🌐 kast.xyz", 505, sY);
+
+    // --- 7. ЛОГОТИП KAST ---
     ctx.textAlign = "right";
     const pulse = 10 + Math.sin(Date.now() / 600) * 5;
     ctx.fillStyle = "#ffd21f"; ctx.font = "bold 50px Fredoka";
@@ -269,21 +294,19 @@ function renderAll(ctx, canvas, avatarImg) {
     ctx.fillText("KAST", 760, 360);
     ctx.restore();
 
-    // Блик "Зеркало"
+    // --- 8. ЭФФЕКТ ЗЕРКАЛЬНОГО БЛИКА ---
     reflectionPos += 5; 
     if (reflectionPos > canvas.width + 500) reflectionPos = -500;
     ctx.save();
     const reflectGrad = ctx.createLinearGradient(reflectionPos, 0, reflectionPos + 250, 400);
     reflectGrad.addColorStop(0, "rgba(255, 255, 255, 0)");
-    reflectGrad.addColorStop(0.5, "rgba(255, 255, 255, 0.04)"); 
+    reflectGrad.addColorStop(0.5, "rgba(255, 255, 255, 0.05)"); 
     reflectGrad.addColorStop(1, "rgba(255, 255, 255, 0)");
     ctx.fillStyle = reflectGrad;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.restore();
 
-    ctx.restore();
-
-    // Линия сканирования (при генерации)
+    // Линия сканирования
     if (isGenerating) {
         scanLineY += 7; 
         if (scanLineY > 400) scanLineY = 0;
@@ -297,6 +320,7 @@ function renderAll(ctx, canvas, avatarImg) {
     }
 }
 
+// Функция скачивания
 function downloadCard() {
     playSound("soundClick");
     const canvas = document.getElementById("cardCanvas");
@@ -306,7 +330,7 @@ function downloadCard() {
     link.click();
 }
 
-// Анимация фона сайта
+// --- ФОНОВАЯ АНИМАЦИЯ САЙТА (Matrix/KAST Flow) ---
 (function() {
     const bgCanvas = document.getElementById("bgCanvas");
     if (!bgCanvas) return;
@@ -331,7 +355,7 @@ function downloadCard() {
         
         bgLines.forEach(l => {
             l.y += l.speed;
-            if (l.y > bgCanvas.height) { l.y = -l.len; }
+            if (l.y > bgCanvas.height) { l.y = -l.len; l.x = Math.random() * bgCanvas.width; }
             bgCtx.strokeStyle = `rgba(0, 255, 65, ${l.op})`;
             bgCtx.lineWidth = 1;
             bgCtx.beginPath(); 
