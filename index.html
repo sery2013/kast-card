@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KAST User Card</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <canvas id="bgCanvas"></canvas>
+    
+    <a href="https://getkast.xyz" class="title-link">
+        <div class="header-frame">
+            <h1 class="title">KAST USER CARD</h1>
+        </div>
+    </a>
+
+    <div class="container">
+        <div class="panel">
+            <label class="file-upload">
+                <span class="file-upload-btn">📁 Choose Avatar</span>
+                <input type="file" id="avatar" accept="image/*">
+            </label>
+
+            <input type="text" id="username" placeholder="Username" value="sery2013">
+            <input type="text" id="date" class="flatpickr-input" placeholder="Join Date">
+
+            <div class="roles">
+                <label><input type="checkbox" value="@Staff"> @Staff</label>
+                <label><input type="checkbox" value="@KAST Evangelist"> @KAST Evangelist</label>
+                <label><input type="checkbox" value="@OG"> @OG</label>
+                <label><input type="checkbox" value="@Kah-ching"> @Kah-ching</label>
+                <label><input type="checkbox" value="@KAST Creator"> @KAST Creator</label>
+            </div>
+
+            <div class="button-group">
+                <button onclick="generateCard()">Generate Card</button>
+                <button onclick="downloadCard()">Download</button>
+            </div>
+        </div>
+
+        <div class="preview-section">
+            <canvas id="cardCanvas" width="800" height="400" style="display: none;"></canvas>
+            <div class="canvas-loader" id="skeleton">
+                <p>Ready to build...</p>
+            </div>
+
+            <div class="bio-panel">
+                <input type="text" id="userBio" placeholder="Your bio..." value="Web3 Explorer & Content Enthusiast">
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>© 2026 <a href="https://kast.xyz" class="footer-link">kast.xyz</a></p>
+        <p>Developer: <a href="https://x.com/kaye_moni" class="twitter-link" target="_blank">
+            <svg class="twitter-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            @kaye_moni
+        </a></p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="script.js"></script>
+</body>
+</html>
