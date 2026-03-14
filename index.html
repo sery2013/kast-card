@@ -22,12 +22,17 @@
     <div class="container">
         <div class="panel">
             <label class="file-upload">
-                <span class="file-upload-btn">📁 Choose Avatar</span>
+                <span class="file-upload-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 8px;">
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    Choose Avatar
+                </span>
                 <input type="file" id="avatar" accept="image/*">
             </label>
 
             <input type="text" id="username" placeholder="Username">
-            <input type="text" id="date" class="flatpickr-input" placeholder="Join Date">
+            <input type="text" id="date" class="flatpickr-input" placeholder="Join Date" readonly>
 
             <div class="roles">
                 <label><input type="checkbox" value="@Staff"> @Staff</label>
