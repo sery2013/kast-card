@@ -1,444 +1,404 @@
-// --- ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ДЛЯ ЭФФЕКТОВ ---
-let particles = [];
-let animationId = null;
-let scanLineY = 0;
-let isGenerating = false;
-let currentAvatarImg = null;
-let reflectionPos = -500;
-let mouseX = 0;
-let mouseY = 0;
-
-window.addEventListener('mousemove', (e) => {
-    mouseX = e.clientX;
-    mouseY = e.clientY;
-});
-
-function playSound(id, stop = false) {
-    const s = document.getElementById(id);
-    if (!s) return;
-    if (stop) {
-        s.pause();
-        s.currentTime = 0;
-    } else {
-        s.play().catch(() => {});
-    }
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-function initDigitalFlow() {
-    particles = [];
-    for (let i = 0; i < 50; i++) {
-        particles.push({
-            x: Math.random() * 800,
-            y: Math.random() * 400,
-            speed: Math.random() * 1.5 + 0.5,
-            length: Math.random() * 80 + 30,
-            opacity: Math.random() * 0.4
-        });
-    }
+html, body {
+    overflow-x: hidden;
+    width: 100%;
 }
 
-function initTilt() {
-    const canvas = document.getElementById("cardCanvas");
-    if (!canvas) return;
-    canvas.addEventListener("mousemove", (e) => {
-        if (canvas.style.display === "none") return;
-        const rect = canvas.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        const centerX = rect.width / 2;
-        const centerY = rect.height / 2;
-        const rotateX = (-(y - centerY) / centerY) * 10;
-        const rotateY = ((x - centerX) / centerX) * 10;
-        canvas.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
-    });
-
-    canvas.addEventListener("mouseleave", () => {
-        canvas.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg)`;
-    });
+body {
+    background: linear-gradient(135deg, #1a1a1a 0%, #3a3a3a 50%, #1a1a1a 100%);
+    background-attachment: fixed;
+    font-family: 'Fredoka', Arial, sans-serif;
+    color: white;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
 }
 
-function generateCard() {
-    playSound("soundClick");
-    playSound("soundScan");
-    const canvas = document.getElementById("cardCanvas");
-    const skeleton = document.getElementById("skeleton");
-
-    if (canvas) canvas.style.display = "block";
-    if (skeleton) skeleton.style.display = "none";
-
-    isGenerating = true;
-    canvas.classList.add("canvas-generating");
-    scanLineY = 0;
-
-    setTimeout(() => {
-        isGenerating = false;
-        canvas.classList.remove("canvas-generating");
-        playSound("soundScan", true);
-    }, 2500);
-
-    const ctx = canvas.getContext("2d");
-    if (particles.length === 0) initDigitalFlow();
-    if (animationId) cancelAnimationFrame(animationId);
-
-    const avatarInput = document.getElementById("avatar");
-
-    if (avatarInput.files && avatarInput.files[0]) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const img = new Image();
-            img.onload = () => {
-                currentAvatarImg = img;
-                startLoop();
-            };
-            img.src = e.target.result;
-        };
-        reader.readAsDataURL(avatarInput.files[0]);
-    } else {
-        startLoop();
-    }
-
-    function startLoop() {
-        function frame() {
-            renderAll(ctx, canvas, currentAvatarImg);
-            animationId = requestAnimationFrame(frame);
-        }
-        animationId = requestAnimationFrame(frame);
-    }
-
-    initTilt();
+.title-link {
+    text-decoration: none;
+    display: block;
+    width: 100%;
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-    const inputs = ["username", "userBio"];
-    inputs.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) { el.addEventListener("input", () => {}); }
-    });
-    if(typeof flatpickr !== 'undefined') {
-        flatpickr("#date", {
-            dateFormat: "m/d/Y",
-            altInput: true,
-            altFormat: "F j, Y",
-            theme: "dark",
-            locale: {
-                months: {
-                    shorthand: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
-                    longhand: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
-                }
-            }
-        });
-    }
-});
-
-function renderAll(ctx, canvas, avatarImg) {
-    ctx.textAlign = "left";
-    ctx.textBaseline = "alphabetic";
-    ctx.shadowBlur = 0;
-    ctx.shadowColor = "transparent";
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    let glitchX = 0;
-    let glitchY = 0;
-    if (isGenerating && Math.random() > 0.8) {
-        glitchX = Math.random() * 4 - 2;
-        glitchY = Math.random() * 2 - 1;
-    }
-
-    ctx.save();
-    ctx.translate(glitchX, glitchY);
-
-    ctx.fillStyle = '#050508';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Градиенты фона (серые)
-    const topGrad = ctx.createRadialGradient(canvas.width, 0, 50, canvas.width, 0, 400);
-    topGrad.addColorStop(0, 'rgba(150, 150, 150, 0.15)');
-    topGrad.addColorStop(1, 'rgba(150, 150, 150, 0)');
-    ctx.fillStyle = topGrad;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    const bottomGrad = ctx.createRadialGradient(0, canvas.height, 50, 0, canvas.height, 500);
-    bottomGrad.addColorStop(0, 'rgba(180, 180, 180, 0.1)');
-    bottomGrad.addColorStop(1, 'rgba(180, 180, 180, 0)');
-    ctx.fillStyle = bottomGrad;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Частицы (серые)
-    particles.forEach(p => {
-        p.y += p.speed;
-        if (p.y > 400) p.y = -p.length;
-        const g = ctx.createLinearGradient(0, p.y, 0, p.y + p.length);
-        g.addColorStop(0, 'transparent');
-        g.addColorStop(1, `rgba(150, 150, 150, ${p.opacity})`);
-        ctx.strokeStyle = g;
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(p.x, p.y);
-        ctx.lineTo(p.x, p.y + p.length);
-        ctx.stroke();
-        ctx.fillStyle = `rgba(150, 150, 150, ${p.opacity * 2})`;
-        ctx.beginPath(); ctx.arc(p.x, p.y + p.length, 1, 0, Math.PI * 2); ctx.fill();
-    });
-
-    // Декоративная сетка и символы
-    ctx.save();
-    ctx.fillStyle = "rgba(255, 255, 255, 0.03)";
-    for (let x = 0; x < canvas.width; x += 30) {
-        for (let y = 0; y < canvas.height; y += 30) {
-            ctx.beginPath(); ctx.arc(x, y, 0.8, 0, Math.PI * 2); ctx.fill();
-        }
-    }
-    ctx.fillStyle = "rgba(150, 150, 150, 0.04)";
-    ctx.font = "bold 40px Fredoka";
-    const symbols = ["( )", "KAST", "*", "◇"];
-    for (let i = 0; i < 10; i++) {
-        for (let j = 0; j < 6; j++) {
-            ctx.save();
-            ctx.translate(i * 120, j * 90);
-            ctx.rotate(-Math.PI / 10);
-            ctx.fillText(symbols[(i + j) % symbols.length], 0, 0);
-            ctx.restore();
-        }
-    }
-    ctx.restore();
-
-    // Аватар (серая рамка)
-    const avX = 25, avY = 70, avS = 140;
-    ctx.save();
-    ctx.strokeStyle = "rgba(150, 150, 150, 0.7)";
-    ctx.strokeRect(avX, avY, avS, avS);
-
-    if (avatarImg) {
-        if (isGenerating && Math.random() > 0.85) {
-            ctx.globalAlpha = 0.5;
-            ctx.drawImage(avatarImg, avX + 5, avY, avS - 2, avS - 2);
-            ctx.globalAlpha = 1;
-        }
-        ctx.drawImage(avatarImg, avX + 1, avY + 1, avS - 2, avS - 2);
-    } else {
-        ctx.fillStyle = "#1a1a2e";
-        ctx.fillRect(avX + 1, avY + 1, avS - 2, avS - 2);
-    }
-    ctx.restore();
-
-    // Заголовок USER CARD
-    ctx.save();
-    ctx.fillStyle = "white";
-    ctx.font = "bold 30px Fredoka";
-    ctx.shadowColor = "rgba(150, 150, 150, 0.6)";
-    ctx.shadowBlur = 15;
-    ctx.fillText("USER CARD", 25, 45);
-    ctx.restore();
-
-    // Разделительная линия (серая)
-    ctx.save();
-    const lineGrad = ctx.createLinearGradient(275, 0, 765, 0);
-    lineGrad.addColorStop(0, "rgba(150, 150, 150, 0)");
-    lineGrad.addColorStop(0.5, "rgba(150, 150, 150, 0.5)");
-    lineGrad.addColorStop(1, "rgba(150, 150, 150, 0)");
-    ctx.strokeStyle = lineGrad;
-    ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(275, 35); ctx.lineTo(765, 35); ctx.stroke();
-    ctx.restore();
-
-    // Данные пользователя
-    const username = document.getElementById("username").value || "sery2013";
-    const date = document.getElementById("date").value || "03/12/2026";
-    const bioText = document.getElementById("userBio").value || "Web3 Explorer & Content Enthusiast";
-
-    ctx.save();
-    ctx.strokeStyle = "rgba(150, 150, 150, 0.3)";
-    ctx.strokeRect(185, 65, 580, 50);
-    ctx.fillStyle = "white"; ctx.font = "bold 24px Fredoka";
-    ctx.fillText(username, 205, 100);
-
-    ctx.strokeStyle = "rgba(180, 180, 180, 0.2)";
-    ctx.strokeRect(185, 125, 580, 40);
-    ctx.fillStyle = "#aaa"; ctx.font = "18px Fredoka";
-    ctx.fillText("Joined: " + date, 205, 152);
-    ctx.restore();
-
-    // Роли (серые градиенты)
-    ctx.save();
-    const selectedRoles = Array.from(document.querySelectorAll(".roles input[type='checkbox']")).filter(chk => chk.checked).map(chk => chk.value);
-    let xStart = 185, yStart = 180;
-    selectedRoles.forEach(role => {
-        let c1, c2;
-        if (role === "@Staff") { c1 = "#4a4a4a"; c2 = "#8a8a8a"; }
-        else if (role === "@KAST Evangelist") { c1 = "#5a5a5a"; c2 = "#9a9a9a"; }
-        else if (role === "@OG") { c1 = "#6a6a6a"; c2 = "#aaaaaa"; }
-        else if (role === "@Kah-ching") { c1 = "#555555"; c2 = "#959595"; }
-        else if (role === "@KAST Creator") { c1 = "#606060"; c2 = "#a0a0a0"; }
-        else { c1 = "#2a2b3d"; c2 = "#4a4b5d"; }
-        
-        ctx.font = "bold 13px Fredoka";
-        const bWidth = ctx.measureText(role).width + 26;
-        if(xStart + bWidth > canvas.width - 20) { xStart = 185; yStart += 35; }
-        const g = ctx.createLinearGradient(xStart, yStart, xStart, yStart + 25);
-        g.addColorStop(0, c2); g.addColorStop(1, c1);
-        ctx.fillStyle = g;
-        ctx.beginPath(); ctx.roundRect(xStart, yStart, bWidth, 25, 6); ctx.fill();
-        ctx.fillStyle = "white"; ctx.fillText(role, xStart + 13, yStart + 17);
-        xStart += bWidth + 10;
-    });
-    ctx.restore();
-
-    // Блок БИО
-    ctx.save();
-    const bioY = yStart + 45;
-    ctx.strokeStyle = "rgba(150, 150, 150, 0.3)";
-    ctx.strokeRect(185, bioY, 580, 45);
-    ctx.fillStyle = "rgba(255, 255, 255, 0.05)"; 
-    ctx.fillRect(185, bioY, 580, 45);
-    ctx.fillStyle = "#eee"; ctx.font = "italic 16px Fredoka";
-    ctx.fillText(bioText, 205, bioY + 28);
-    ctx.restore();
-
-    // Соцсети и иконки
-    ctx.save();
-    const sY = bioY + 105;
-    ctx.font = "14px Fredoka"; ctx.fillStyle = "white";
-    const drawIcon = (x, y, color, type) => {
-        ctx.save(); ctx.translate(x, y - 12); ctx.fillStyle = color;
-        if (type === 'tg') {
-            ctx.beginPath(); ctx.moveTo(0, 7); ctx.lineTo(15, 0); ctx.lineTo(13, 15); ctx.lineTo(9, 10); ctx.lineTo(9, 14); ctx.lineTo(7, 10); ctx.fill();
-        } else if (type === 'x') {
-            ctx.font = "bold 15px Arial"; ctx.fillStyle = "white"; ctx.fillText("𝕏", 0, 13);
-        } else if (type === 'dc') {
-            ctx.beginPath(); ctx.arc(8, 7, 7, 0, Math.PI * 2); ctx.fill();
-        }
-        ctx.restore();
-    };
-    drawIcon(185, sY, "white", 'x'); ctx.fillText("Twitter", 207, sY);
-    drawIcon(285, sY, "#888888", 'tg'); ctx.fillText("Telegram", 307, sY);
-    drawIcon(395, sY, "#888888", 'dc'); ctx.fillText("Discord", 417, sY);
-    ctx.fillText("🌐 getkast.xyz", 505, sY);
-    ctx.restore();
-
-    // Логотип KAST (серый градиент)
-    ctx.save();
-    ctx.textAlign = "right";
-    const pulse = 10 + Math.sin(Date.now() / 500) * 8;
-    const kastGrad = ctx.createLinearGradient(700, 360, 760, 360);
-    kastGrad.addColorStop(0, "#9a9a9a"); kastGrad.addColorStop(1, "#6a6a6a");
-    ctx.fillStyle = kastGrad; ctx.font = "bold 50px Fredoka";
-    ctx.shadowColor = "#9a9a9a"; ctx.shadowBlur = pulse;
-    ctx.fillText("KAST", 760, 360);
-    ctx.restore();
-
-    // QR Код
-    const qrSrc = "https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=https://getkast.xyz";
-    const qrImg = new Image();
-    qrImg.crossOrigin = "anonymous";
-    qrImg.src = qrSrc;
-    if (qrImg.complete) {
-        ctx.drawImage(qrImg, 35, 245, 120, 120);
-        ctx.fillStyle = "rgba(255,255,255,0.3)"; ctx.font = "10px Fredoka"; ctx.textAlign = "center";
-        ctx.fillText("getkast.xyz", 95, 380);
-    }
-
-    // ГЛИТЧ: СЛУЧАЙНЫЕ ПОЛОСКИ (серые)
-    if (isGenerating && Math.random() > 0.9) {
-        ctx.fillStyle = "rgba(150, 150, 150, 0.15)";
-        ctx.fillRect(0, Math.random() * 400, 800, Math.random() * 40);
-    }
-
-    // ЭФФЕКТ СТЕКЛЯННОГО БЛИКА
-    reflectionPos += 4; 
-    if (reflectionPos > canvas.width + 500) reflectionPos = -500;
-    ctx.save();
-    const reflectGrad = ctx.createLinearGradient(reflectionPos, 0, reflectionPos + 300, 400);
-    reflectGrad.addColorStop(0, "rgba(255, 255, 255, 0)");
-    reflectGrad.addColorStop(0.5, "rgba(255, 255, 255, 0.1)"); 
-    reflectGrad.addColorStop(1, "rgba(255, 255, 255, 0)");
-    ctx.fillStyle = reflectGrad;
-    ctx.globalCompositeOperation = "overlay"; 
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.restore();
-
-    ctx.restore();
-
-    // Сканирующая линия (серая)
-    if (isGenerating) {
-        scanLineY += 8; 
-        if (scanLineY > 400) scanLineY = 0;
-        ctx.save();
-        let scanGrad = ctx.createLinearGradient(0, scanLineY - 40, 0, scanLineY);
-        scanGrad.addColorStop(0, "transparent");
-        scanGrad.addColorStop(1, "rgba(150, 150, 150, 0.4)");
-        ctx.fillStyle = scanGrad;
-        ctx.fillRect(0, scanLineY - 40, canvas.width, 40);
-        ctx.strokeStyle = "#9a9a9a";
-        ctx.lineWidth = 2;
-        ctx.shadowBlur = 15;
-        ctx.shadowColor = "#9a9a9a";
-        ctx.beginPath(); ctx.moveTo(0, scanLineY); ctx.lineTo(canvas.width, scanLineY); ctx.stroke();
-        ctx.restore();
-    }
+.header-frame {
+    width: calc(100% - 40px);
+    max-width: 1200px;
+    margin: 20px auto;
+    box-sizing: border-box;
+    background: linear-gradient(#0a0a0f, #0a0a0f) padding-box,
+                linear-gradient(90deg, #6a6a6a, #9a9a9a, #6a6a6a) border-box;
+    border: 1.5px solid transparent;
+    border-radius: 12px;
+    box-shadow: 0 0 25px rgba(150, 150, 150, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-function downloadCard() {
-    playSound("soundClick");
-    const canvas = document.getElementById("cardCanvas");
-    const link = document.createElement("a");
-    link.download = "kast-animated-card.png";
-    link.href = canvas.toDataURL("image/png");
-    link.click();
+.header-frame:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 30px rgba(150, 150, 150, 0.2);
 }
 
-// ФОНОВАЯ АНИМАЦИЯ САЙТА (серая)
-(function() {
-    const bgCanvas = document.getElementById("bgCanvas");
-    if (!bgCanvas) return;
-    const bgCtx = bgCanvas.getContext("2d");
-    let bgLines = [];
-    
-    function init() {
-        bgCanvas.width = window.innerWidth;
-        bgCanvas.height = window.innerHeight;
-        bgLines = Array.from({ length: 80 }, () => ({
-            x: Math.random() * bgCanvas.width,
-            y: Math.random() * bgCanvas.height,
-            speed: Math.random() * 1 + 0.5,
-            len: Math.random() * 100 + 50,
-            op: Math.random() * 0.3
-        }));
-    }
+.title {
+    text-align: left;
+    font-size: 36px;
+    margin: 0;
+    padding: 15px 0 15px 40px;
+    background: linear-gradient(90deg, #9a9a9a, #6a6a6a);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    position: relative;
+    display: block;
+    animation: glitch-skew 1s infinite linear alternate-reverse;
+}
 
-    function animate() {
-        bgCtx.fillStyle = '#050508';
-        bgCtx.fillRect(0, 0, bgCanvas.width, bgCanvas.height);
-        
-        bgLines.forEach(l => {
-            let dx = mouseX - l.x;
-            let dy = mouseY - l.y;
-            let dist = Math.sqrt(dx*dx + dy*dy);
-            let currentSpeed = l.speed;
-            
-            if (dist < 250) {
-                currentSpeed += (1 - dist/250) * 6;
-            }
+.title::before, .title::after {
+    content: "KAST USER CARD";
+    position: absolute;
+    top: 0;
+    left: 40px;
+    width: 100%;
+    height: 100%;
+    opacity: 0.8;
+}
 
-            l.y += currentSpeed;
-            if (l.y > bgCanvas.height) { 
-                l.y = -l.len; 
-                l.x = Math.random() * bgCanvas.width; 
-            }
-            
-            let g = bgCtx.createLinearGradient(0, l.y, 0, l.y + l.len);
-            g.addColorStop(0, 'transparent');
-            g.addColorStop(1, `rgba(150, 150, 150, ${l.op})`);
-            bgCtx.strokeStyle = g;
-            bgCtx.lineWidth = 1.2;
-            bgCtx.beginPath(); 
-            bgCtx.moveTo(l.x, l.y); 
-            bgCtx.lineTo(l.x, l.y + l.len); 
-            bgCtx.stroke();
-        });
-        requestAnimationFrame(animate);
-    }
+.title::before {
+    color: #aaa;
+    z-index: -1;
+    animation: glitch-anim 2s infinite linear alternate-reverse;
+}
 
-    window.addEventListener('resize', init);
-    init();
-    animate();
-})();
+.title::after {
+    color: #888;
+    z-index: -2;
+    animation: glitch-anim2 3s infinite linear alternate-reverse;
+}
+
+@keyframes glitch-anim {
+    0% { clip-path: inset(50% 0 30% 0); transform: translate(-5px, -2px); }
+    20% { clip-path: inset(10% 0 80% 0); transform: translate(5px, 2px); }
+    40% { clip-path: inset(40% 0 40% 0); transform: translate(-5px, 2px); }
+    60% { clip-path: inset(80% 0 5% 0); transform: translate(5px, -2px); }
+    80% { clip-path: inset(15% 0 60% 0); transform: translate(-5px, -2px); }
+    100% { clip-path: inset(50% 0 30% 0); transform: translate(5px, 2px); }
+}
+
+@keyframes glitch-anim2 {
+    0% { clip-path: inset(25% 0 58% 0); transform: translate(5px, 2px); }
+    20% { clip-path: inset(74% 0 12% 0); transform: translate(-5px, -2px); }
+    40% { clip-path: inset(10% 0 70% 0); transform: translate(5px, -2px); }
+    60% { clip-path: inset(30% 0 45% 0); transform: translate(-5px, 2px); }
+    100% { clip-path: inset(25% 0 58% 0); transform: translate(5px, 2px); }
+}
+
+@keyframes glitch-skew {
+    0% { transform: skew(1deg); }
+    10% { transform: skew(-1deg); }
+    100% { transform: skew(0deg); }
+}
+
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 30px;
+    margin: 20px;
+    flex: 1;
+    flex-wrap: wrap;
+    width: 100%;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.panel {
+    background: rgba(30, 30, 35, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 25px;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(150, 150, 150, 0.15);
+    width: 300px;
+    border: 1px solid rgba(150, 150, 150, 0.1);
+}
+
+.panel input[type="text"] {
+    display: block;
+    width: 100%;
+    margin: 12px 0;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(150, 150, 150, 0.25);
+    background: rgba(15, 15, 20, 0.6);
+    color: white;
+    font-family: 'Fredoka', sans-serif;
+    box-sizing: border-box;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.panel input[type="text"]:focus {
+    outline: none;
+    border-color: #9a9a9a;
+    box-shadow: 0 0 10px rgba(150, 150, 150, 0.2);
+}
+
+.file-upload {
+    margin: 15px 0;
+}
+
+.file-upload input[type="file"] {
+    display: none;
+}
+
+.file-upload-btn {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    background: linear-gradient(45deg, #6a6a6a, #9a9a9a);
+    color: #000;
+    font-weight: 600;
+    font-family: 'Fredoka', sans-serif;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+.file-upload-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(150, 150, 150, 0.4);
+    filter: brightness(1.1);
+}
+
+.roles {
+    margin: 20px 0;
+    max-height: 200px;
+    overflow-y: auto;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+}
+
+.roles::-webkit-scrollbar { width: 5px; }
+.roles::-webkit-scrollbar-thumb { background: #9a9a9a; border-radius: 10px; }
+
+.roles label {
+    display: flex;
+    align-items: center;
+    margin: 6px 0;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 6px;
+    transition: background 0.2s;
+    font-size: 14px;
+}
+
+.roles label:hover { background: rgba(150, 150, 150, 0.1); }
+.roles input[type="checkbox"] { margin-right: 10px; accent-color: #9a9a9a; }
+
+.button-group {
+    display: flex;
+    gap: 10px;
+}
+
+button {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(45deg, #6a6a6a, #9a9a9a);
+    color: black;
+    font-weight: 600;
+    font-family: 'Fredoka', sans-serif;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(150, 150, 150, 0.4);
+}
+
+canvas#cardCanvas {
+    border-radius: 20px;
+    border: 1px solid rgba(150, 150, 150, 0.3);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    max-width: 100%;
+    height: auto;
+    transition: transform 0.1s ease-out;
+    transform-style: preserve-3d;
+    will-change: transform;
+}
+
+.canvas-loader {
+    position: relative;
+    width: 800px;
+    height: 400px;
+    max-width: 100%;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px dashed rgba(150, 150, 150, 0.3);
+}
+
+.canvas-loader::after {
+    content: "";
+    position: absolute;
+    top: 0; right: 0; bottom: 0; left: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, rgba(150, 150, 150, 0.1), transparent);
+    animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+    100% { transform: translateX(100%); }
+}
+
+#cardCanvas[style*="display: none"] + .canvas-loader { display: flex; }
+#cardCanvas:not([style*="display: none"]) + .canvas-loader { display: none; }
+
+.preview-section {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    flex: 1;
+    max-width: 800px;
+}
+
+.bio-panel {
+    background: rgba(30, 30, 35, 0.7);
+    backdrop-filter: blur(12px);
+    padding: 20px;
+    border-radius: 20px;
+    border: 1px solid rgba(150, 150, 150, 0.15);
+}
+
+.bio-panel input {
+    width: 100%;
+    padding: 15px;
+    background: rgba(15, 15, 20, 0.6);
+    border: 1px solid rgba(150, 150, 150, 0.25);
+    border-radius: 10px;
+    color: white;
+    font-size: 16px;
+    box-sizing: border-box;
+}
+
+.footer {
+    text-align: center;
+    padding: 30px;
+    margin-top: auto;
+    background: rgba(10, 10, 13, 0.8);
+    border-top: 1px solid rgba(150, 150, 150, 0.1);
+    width: 100%;
+}
+
+.footer p { margin: 5px 0; font-size: 14px; color: rgba(255, 255, 255, 0.6); }
+.footer-link { color: #9a9a9a; text-decoration: none; font-weight: 600; }
+.twitter-link { display: inline-flex; align-items: center; gap: 6px; color: white; text-decoration: none; }
+.twitter-icon { width: 16px; height: 16px; }
+
+@media (max-width: 900px) {
+    .container { flex-direction: column; align-items: center; }
+    .panel { width: 100%; max-width: 340px; }
+    .preview-section { width: 100%; }
+}
+
+.canvas-generating {
+    animation: pulse-glow 0.8s infinite ease-in-out;
+}
+
+@keyframes pulse-glow {
+    0% { box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 0px rgba(150, 150, 150, 0); }
+    50% { box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 25px rgba(150, 150, 150, 0.4); }
+    100% { box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 0px rgba(150, 150, 150, 0); }
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator { display: none; }
+
+.flatpickr-input[type="text"] {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='18' rx='2' ry='2'%3E%3C/rect%3E%3Cline x1='16' y1='2' x2='16' y2='6'%3E%3C/line%3E%3Cline x1='8' y1='2' x2='8' y2='6'%3E%3C/line%3E%3Cline x1='3' y1='10' x2='21' y2='10'%3E%3C/line%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 12px center !important;
+    background-size: 18px !important;
+}
+
+/* СВЕTLЫЙ КАЛЕНДАРЬ */
+.flatpickr-calendar {
+    background: #ffffff !important;
+    border: 1px solid rgba(150, 150, 150, 0.4) !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3) !important;
+    color: #333 !important;
+}
+
+.flatpickr-months .flatpickr-month {
+    background: #f5f5f5 !important;
+    color: #333 !important;
+    fill: #333 !important;
+}
+
+.flatpickr-months .flatpickr-prev-month,
+.flatpickr-months .flatpickr-next-month {
+    color: #333 !important;
+    fill: #333 !important;
+}
+
+.flatpickr-months .flatpickr-prev-month:hover,
+.flatpickr-months .flatpickr-next-month:hover {
+    color: #666 !important;
+    fill: #666 !important;
+}
+
+.flatpickr-weekdays {
+    background: #f5f5f5 !important;
+}
+
+.flatpickr-weekday {
+    color: #333 !important;
+}
+
+.flatpickr-day {
+    color: #333 !important;
+    border-color: transparent !important;
+}
+
+.flatpickr-day:hover {
+    background: rgba(150, 150, 150, 0.2) !important;
+    border-color: transparent !important;
+}
+
+.flatpickr-day.selected {
+    background: #9a9a9a !important;
+    border-color: #9a9a9a !important;
+    color: white !important;
+}
+
+.flatpickr-day.today {
+    border-color: #9a9a9a !important;
+    color: #9a9a9a !important;
+}
+
+.flatpickr-day.today:hover {
+    background: #9a9a9a !important;
+    color: white !important;
+}
+
+.flatpickr-current-month .flatpickr-monthDropdown-months {
+    color: #333 !important;
+}
+
+.flatpickr-current-month input.cur-year {
+    color: #333 !important;
+}
