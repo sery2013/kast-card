@@ -4,18 +4,15 @@ let animationId = null;
 let scanLineY = 0;
 let isGenerating = false;
 let currentAvatarImg = null;
-// Новые переменные для улучшений
 let reflectionPos = -500;
 let mouseX = 0;
 let mouseY = 0;
 
-// Отслеживание мыши для интерактивного фона
 window.addEventListener('mousemove', (e) => {
     mouseX = e.clientX;
     mouseY = e.clientY;
 });
 
-// Функция для воспроизведения звуков
 function playSound(id, stop = false) {
     const s = document.getElementById(id);
     if (!s) return;
@@ -153,33 +150,33 @@ function renderAll(ctx, canvas, avatarImg) {
     ctx.fillStyle = '#050508';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Градиенты фона
+    // Градиенты фона (серые)
     const topGrad = ctx.createRadialGradient(canvas.width, 0, 50, canvas.width, 0, 400);
-    topGrad.addColorStop(0, 'rgba(255, 122, 24, 0.15)');
-    topGrad.addColorStop(1, 'rgba(255, 122, 24, 0)');
+    topGrad.addColorStop(0, 'rgba(150, 150, 150, 0.15)');
+    topGrad.addColorStop(1, 'rgba(150, 150, 150, 0)');
     ctx.fillStyle = topGrad;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     const bottomGrad = ctx.createRadialGradient(0, canvas.height, 50, 0, canvas.height, 500);
-    bottomGrad.addColorStop(0, 'rgba(0, 212, 255, 0.1)');
-    bottomGrad.addColorStop(1, 'rgba(0, 212, 255, 0)');
+    bottomGrad.addColorStop(0, 'rgba(180, 180, 180, 0.1)');
+    bottomGrad.addColorStop(1, 'rgba(180, 180, 180, 0)');
     ctx.fillStyle = bottomGrad;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Частицы
+    // Частицы (серые)
     particles.forEach(p => {
         p.y += p.speed;
         if (p.y > 400) p.y = -p.length;
         const g = ctx.createLinearGradient(0, p.y, 0, p.y + p.length);
         g.addColorStop(0, 'transparent');
-        g.addColorStop(1, `rgba(255, 122, 24, ${p.opacity})`);
+        g.addColorStop(1, `rgba(150, 150, 150, ${p.opacity})`);
         ctx.strokeStyle = g;
         ctx.lineWidth = 1;
         ctx.beginPath();
         ctx.moveTo(p.x, p.y);
         ctx.lineTo(p.x, p.y + p.length);
         ctx.stroke();
-        ctx.fillStyle = `rgba(255, 122, 24, ${p.opacity * 2})`;
+        ctx.fillStyle = `rgba(150, 150, 150, ${p.opacity * 2})`;
         ctx.beginPath(); ctx.arc(p.x, p.y + p.length, 1, 0, Math.PI * 2); ctx.fill();
     });
 
@@ -191,7 +188,7 @@ function renderAll(ctx, canvas, avatarImg) {
             ctx.beginPath(); ctx.arc(x, y, 0.8, 0, Math.PI * 2); ctx.fill();
         }
     }
-    ctx.fillStyle = "rgba(255, 122, 24, 0.04)";
+    ctx.fillStyle = "rgba(150, 150, 150, 0.04)";
     ctx.font = "bold 40px Fredoka";
     const symbols = ["( )", "KAST", "*", "◇"];
     for (let i = 0; i < 10; i++) {
@@ -205,10 +202,10 @@ function renderAll(ctx, canvas, avatarImg) {
     }
     ctx.restore();
 
-    // Аватар
+    // Аватар (серая рамка)
     const avX = 25, avY = 70, avS = 140;
     ctx.save();
-    ctx.strokeStyle = "rgba(255, 122, 24, 0.7)";
+    ctx.strokeStyle = "rgba(150, 150, 150, 0.7)";
     ctx.strokeRect(avX, avY, avS, avS);
 
     if (avatarImg) {
@@ -228,17 +225,17 @@ function renderAll(ctx, canvas, avatarImg) {
     ctx.save();
     ctx.fillStyle = "white";
     ctx.font = "bold 30px Fredoka";
-    ctx.shadowColor = "rgba(255, 122, 24, 0.6)";
+    ctx.shadowColor = "rgba(150, 150, 150, 0.6)";
     ctx.shadowBlur = 15;
     ctx.fillText("USER CARD", 25, 45);
     ctx.restore();
 
-    // Разделительная линия
+    // Разделительная линия (серая)
     ctx.save();
     const lineGrad = ctx.createLinearGradient(275, 0, 765, 0);
-    lineGrad.addColorStop(0, "rgba(255, 122, 24, 0)");
-    lineGrad.addColorStop(0.5, "rgba(255, 122, 24, 0.5)");
-    lineGrad.addColorStop(1, "rgba(255, 122, 24, 0)");
+    lineGrad.addColorStop(0, "rgba(150, 150, 150, 0)");
+    lineGrad.addColorStop(0.5, "rgba(150, 150, 150, 0.5)");
+    lineGrad.addColorStop(1, "rgba(150, 150, 150, 0)");
     ctx.strokeStyle = lineGrad;
     ctx.lineWidth = 1;
     ctx.beginPath(); ctx.moveTo(275, 35); ctx.lineTo(765, 35); ctx.stroke();
@@ -250,28 +247,28 @@ function renderAll(ctx, canvas, avatarImg) {
     const bioText = document.getElementById("userBio").value || "Web3 Explorer & Content Enthusiast";
 
     ctx.save();
-    ctx.strokeStyle = "rgba(255, 122, 24, 0.3)";
+    ctx.strokeStyle = "rgba(150, 150, 150, 0.3)";
     ctx.strokeRect(185, 65, 580, 50);
     ctx.fillStyle = "white"; ctx.font = "bold 24px Fredoka";
     ctx.fillText(username, 205, 100);
 
-    ctx.strokeStyle = "rgba(255, 204, 0, 0.2)";
+    ctx.strokeStyle = "rgba(180, 180, 180, 0.2)";
     ctx.strokeRect(185, 125, 580, 40);
     ctx.fillStyle = "#aaa"; ctx.font = "18px Fredoka";
     ctx.fillText("Joined: " + date, 205, 152);
     ctx.restore();
 
-    // Роли
+    // Роли (серые градиенты)
     ctx.save();
     const selectedRoles = Array.from(document.querySelectorAll(".roles input[type='checkbox']")).filter(chk => chk.checked).map(chk => chk.value);
     let xStart = 185, yStart = 180;
     selectedRoles.forEach(role => {
         let c1, c2;
-        if (role === "@Staff") { c1 = "#8B0000"; c2 = "#FF4444"; }
-        else if (role === "@KAST Evangelist") { c1 = "#008B8B"; c2 = "#00D4FF"; }
-        else if (role === "@OG") { c1 = "#B8860B"; c2 = "#FFD700"; }
-        else if (role === "@Kah-ching") { c1 = "#9932CC"; c2 = "#DA70D6"; }
-        else if (role === "@KAST Creator") { c1 = "#CC5500"; c2 = "#FF7A18"; }
+        if (role === "@Staff") { c1 = "#4a4a4a"; c2 = "#8a8a8a"; }
+        else if (role === "@KAST Evangelist") { c1 = "#5a5a5a"; c2 = "#9a9a9a"; }
+        else if (role === "@OG") { c1 = "#6a6a6a"; c2 = "#aaaaaa"; }
+        else if (role === "@Kah-ching") { c1 = "#555555"; c2 = "#959595"; }
+        else if (role === "@KAST Creator") { c1 = "#606060"; c2 = "#a0a0a0"; }
         else { c1 = "#2a2b3d"; c2 = "#4a4b5d"; }
         
         ctx.font = "bold 13px Fredoka";
@@ -289,7 +286,7 @@ function renderAll(ctx, canvas, avatarImg) {
     // Блок БИО
     ctx.save();
     const bioY = yStart + 45;
-    ctx.strokeStyle = "rgba(255, 122, 24, 0.3)";
+    ctx.strokeStyle = "rgba(150, 150, 150, 0.3)";
     ctx.strokeRect(185, bioY, 580, 45);
     ctx.fillStyle = "rgba(255, 255, 255, 0.05)"; 
     ctx.fillRect(185, bioY, 580, 45);
@@ -313,19 +310,19 @@ function renderAll(ctx, canvas, avatarImg) {
         ctx.restore();
     };
     drawIcon(185, sY, "white", 'x'); ctx.fillText("Twitter", 207, sY);
-    drawIcon(285, sY, "#0088cc", 'tg'); ctx.fillText("Telegram", 307, sY);
-    drawIcon(395, sY, "#5865F2", 'dc'); ctx.fillText("Discord", 417, sY);
+    drawIcon(285, sY, "#888888", 'tg'); ctx.fillText("Telegram", 307, sY);
+    drawIcon(395, sY, "#888888", 'dc'); ctx.fillText("Discord", 417, sY);
     ctx.fillText("🌐 getkast.xyz", 505, sY);
     ctx.restore();
 
-    // Логотип KAST
+    // Логотип KAST (серый градиент)
     ctx.save();
     ctx.textAlign = "right";
     const pulse = 10 + Math.sin(Date.now() / 500) * 8;
     const kastGrad = ctx.createLinearGradient(700, 360, 760, 360);
-    kastGrad.addColorStop(0, "#ffcc00"); kastGrad.addColorStop(1, "#ff7a18");
+    kastGrad.addColorStop(0, "#9a9a9a"); kastGrad.addColorStop(1, "#6a6a6a");
     ctx.fillStyle = kastGrad; ctx.font = "bold 50px Fredoka";
-    ctx.shadowColor = "#ff7a18"; ctx.shadowBlur = pulse;
+    ctx.shadowColor = "#9a9a9a"; ctx.shadowBlur = pulse;
     ctx.fillText("KAST", 760, 360);
     ctx.restore();
 
@@ -340,13 +337,13 @@ function renderAll(ctx, canvas, avatarImg) {
         ctx.fillText("getkast.xyz", 95, 380);
     }
 
-    // --- ГЛИТЧ: СЛУЧАЙНЫЕ ПОЛОСКИ ---
+    // ГЛИТЧ: СЛУЧАЙНЫЕ ПОЛОСКИ (серые)
     if (isGenerating && Math.random() > 0.9) {
-        ctx.fillStyle = "rgba(255, 122, 24, 0.15)";
+        ctx.fillStyle = "rgba(150, 150, 150, 0.15)";
         ctx.fillRect(0, Math.random() * 400, 800, Math.random() * 40);
     }
 
-    // --- ЭФФЕКТ СТЕКЛЯННОГО БЛИКА ---
+    // ЭФФЕКТ СТЕКЛЯННОГО БЛИКА
     reflectionPos += 4; 
     if (reflectionPos > canvas.width + 500) reflectionPos = -500;
     ctx.save();
@@ -361,20 +358,20 @@ function renderAll(ctx, canvas, avatarImg) {
 
     ctx.restore();
 
-    // Сканирующая линия
+    // Сканирующая линия (серая)
     if (isGenerating) {
         scanLineY += 8; 
         if (scanLineY > 400) scanLineY = 0;
         ctx.save();
         let scanGrad = ctx.createLinearGradient(0, scanLineY - 40, 0, scanLineY);
         scanGrad.addColorStop(0, "transparent");
-        scanGrad.addColorStop(1, "rgba(255, 122, 24, 0.4)");
+        scanGrad.addColorStop(1, "rgba(150, 150, 150, 0.4)");
         ctx.fillStyle = scanGrad;
         ctx.fillRect(0, scanLineY - 40, canvas.width, 40);
-        ctx.strokeStyle = "#ffcc00";
+        ctx.strokeStyle = "#9a9a9a";
         ctx.lineWidth = 2;
         ctx.shadowBlur = 15;
-        ctx.shadowColor = "#ff7a18";
+        ctx.shadowColor = "#9a9a9a";
         ctx.beginPath(); ctx.moveTo(0, scanLineY); ctx.lineTo(canvas.width, scanLineY); ctx.stroke();
         ctx.restore();
     }
@@ -389,7 +386,7 @@ function downloadCard() {
     link.click();
 }
 
-// --- ФОНОВАЯ АНИМАЦИЯ САЙТА (С ИНТЕРАКТИВОМ) ---
+// ФОНОВАЯ АНИМАЦИЯ САЙТА (серая)
 (function() {
     const bgCanvas = document.getElementById("bgCanvas");
     if (!bgCanvas) return;
@@ -430,7 +427,7 @@ function downloadCard() {
             
             let g = bgCtx.createLinearGradient(0, l.y, 0, l.y + l.len);
             g.addColorStop(0, 'transparent');
-            g.addColorStop(1, `rgba(255, 122, 24, ${l.op})`);
+            g.addColorStop(1, `rgba(150, 150, 150, ${l.op})`);
             bgCtx.strokeStyle = g;
             bgCtx.lineWidth = 1.2;
             bgCtx.beginPath(); 
