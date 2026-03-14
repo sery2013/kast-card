@@ -315,14 +315,14 @@ function renderAll(ctx, canvas, avatarImg) {
     ctx.fillText("KAST", 760, 360);
     ctx.restore();
 
-    const qrSrc = "https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=https://getkast.xyz";
+    const qrSrc = "https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=https://kast.xyz";
     const qrImg = new Image();
     qrImg.crossOrigin = "anonymous";
     qrImg.src = qrSrc;
     if (qrImg.complete) {
         ctx.drawImage(qrImg, 35, 245, 120, 120);
         ctx.fillStyle = "rgba(255,255,255,0.3)"; ctx.font = "10px Fredoka"; ctx.textAlign = "center";
-        ctx.fillText("getkast.xyz", 95, 380);
+        ctx.fillText("kast.xyz", 95, 380);
     }
 
     if (isGenerating && Math.random() > 0.9) {
