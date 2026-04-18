@@ -1,4 +1,4 @@
-/* ИСПРАВЛЕНИЕ: Добавлен селектор * для сброса отступов */
+/* Сброс отступов */
 * {
     margin: 0;
     padding: 0;
@@ -222,6 +222,7 @@ canvas#cardCanvas {
     transition: transform 0.1s ease-out;
     transform-style: preserve-3d;
     will-change: transform;
+    display: none; /* СКРЫТ ПО УМОЛЧАНИЮ */
 }
 .canvas-loader {
     position: relative;
@@ -247,8 +248,6 @@ canvas#cardCanvas {
 @keyframes shimmer {
     100% { transform: translateX(100%); }
 }
-#cardCanvas[style*="display: none"] + .canvas-loader { display: flex; }
-#cardCanvas:not([style*="display: none"]) + .canvas-loader { display: none; }
 .preview-section {
     display: flex;
     flex-direction: column;
