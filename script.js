@@ -236,29 +236,13 @@ function renderAll(ctx, canvas, avatarImg) {
     ctx.save();
     ctx.translate(glitchX, glitchY);
     
-    // === 1. РИСУЕМ ФОНОВУЮ КАРТУ (БЕЗ МАСКИ) ===
-    if (selectedCardImage) {
-        ctx.save();
-        const scale = Math.min(canvas.width / selectedCardImage.width, 
-                      canvas.height / selectedCardImage.height);
-        const x = (canvas.width - selectedCardImage.width * scale) / 2;
-        const y = (canvas.height - selectedCardImage.height * scale) / 2;
-        ctx.drawImage(selectedCardImage, x, y, 
-                     selectedCardImage.width * scale, 
-                     selectedCardImage.height * scale);
-        ctx.restore();
-    } else {
-        ctx.fillStyle = isDark ? '#000000' : '#f0f0f0';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-    }
-    
-    // === 2. ВКЛЮЧАЕМ МАСКУ (СКРУГЛЕННЫЕ УГЛЫ) ===
+    // === 1. ВКЛЮЧАЕМ МАСКУ (СКРУГЛЕННЫЕ УГЛЫ) ===
     ctx.beginPath();
     ctx.roundRect(0, 0, canvas.width, canvas.height, 20); 
     ctx.clip();
     
-    // === 3. ВСЕ ЭЛЕМЕНТЫ РИСУЮТСЯ ВНУТРИ МАСКИ ===
-    // Эффекты поверх карточки
+    // === 2. ВСЕ ЭЛЕМЕНТЫ РИСУЮТСЯ ВНУТРИ МАСКИ ===
+    // Эффекты (градиенты)
     const topGrad = ctx.createRadialGradient(canvas.width, 0, 50, canvas.width, 0, 400);
     topGrad.addColorStop(0, isDark ? 'rgba(0, 242, 255, 0.15)' : 'rgba(0, 136, 170, 0.15)');
     topGrad.addColorStop(1, 'rgba(0, 242, 255, 0)');
@@ -501,7 +485,20 @@ function renderAll(ctx, canvas, avatarImg) {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.restore();
     
-    ctx.restore(); // ВЫКЛЮЧАЕМ МАСКУ
+    ctx.restore(); // === 3. ВЫКЛЮЧАЕМ МАСКУ ===
+    
+    // === 4. ФОНОВАЯ КАРТА РИСУЕТСЯ ПОВЕРХ МАСКИ (БЕЗ ОБРЕЗКИ) ===
+    if (selectedCardImage) {
+        ctx.save();
+        const scale = Math.min(canvas.width / selectedCardImage.width, 
+                      canvas.height / selectedCardImage.height);
+        const x = (canvas.width - selectedCardImage.width * scale) / 2;
+        const y = (canvas.height - selectedCardImage.height * scale) / 2;
+        ctx.drawImage(selectedCardImage, x, y, 
+                     selectedCardImage.width * scale, 
+                     selectedCardImage.height * scale);
+        ctx.restore();
+    }
     
     // Сканирующая линия (рисуется ВНЕ маски)
     if (isGenerating) {
