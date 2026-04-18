@@ -245,8 +245,8 @@ function renderAll(ctx, canvas, avatarImg) {
     // === ФОН: ВЫБРАННАЯ КАРТОЧКА ===
     if (selectedCardImage) {
         ctx.save();
-        const scale = Math.max(canvas.width / selectedCardImage.width, 
-                              canvas.height / selectedCardImage.height);
+        const scale = Math.min(canvas.width / selectedCardImage.width, 
+                      canvas.height / selectedCardImage.height);
         const x = (canvas.width - selectedCardImage.width * scale) / 2;
         const y = (canvas.height - selectedCardImage.height * scale) / 2;
         ctx.drawImage(selectedCardImage, x, y, 
