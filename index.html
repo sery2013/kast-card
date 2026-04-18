@@ -19,7 +19,6 @@
         </div>
     </a>
 
-    <!-- СЕКЦИЯ ВЫБОРА КАРТОЧЕК -->
     <div class="card-selector">
         <h3 class="selector-title">Choose Card Design</h3>
         <div class="card-grid">
@@ -84,6 +83,15 @@
             <input type="text" id="date" class="flatpickr-input" placeholder="Join Date" readonly>
             <input type="text" id="userBio" placeholder="Your bio..." maxlength="60">
             
+            <!-- ПЕРЕКЛЮЧАТЕЛЬ ТЕМЫ -->
+            <div class="theme-switcher">
+                <label for="theme-mode">🎨 Text Theme:</label>
+                <select id="theme-mode">
+                    <option value="dark">Dark (White/Cyan)</option>
+                    <option value="light">Light (Black/Teal)</option>
+                </select>
+            </div>
+
             <div class="roles">
                 <label><input type="checkbox" value="@Staff"> @Staff</label>
                 <label><input type="checkbox" value="@KAST Evangelist"> @KAST Evangelist</label>
@@ -100,11 +108,9 @@
         </div>
 
         <div class="preview-section">
-            <!-- Скетон (виден по умолчанию) -->
             <div class="canvas-loader" id="skeleton">
                 <span>Ready to build...</span>
             </div>
-            <!-- Canvas скрыт по умолчанию -->
             <canvas id="cardCanvas" width="800" height="400" style="display: none;"></canvas>
         </div>
     </div>
