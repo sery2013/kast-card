@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,37 +13,85 @@
 <body>
     <canvas id="bgCanvas"></canvas>
     
-    <a href="https://kast-card-sable.vercel.app/" class="title-link">
+    <a href="https://kast.xyz" class="title-link">
         <div class="header-frame">
             <h1 class="title">KAST USER CARD</h1>
         </div>
     </a>
 
+    <!-- СЕКЦИЯ ВЫБОРА КАРТОЧЕК -->
+    <div class="card-selector">
+        <h3 class="selector-title">Choose Card Design</h3>
+        <div class="card-grid">
+            <div class="card-option active" data-card="1" data-name="Bitcoin Black">
+                <img src="https://github.com/sery2013/kast-card/blob/main/Bitcoin-Black-Card.png?raw=true" alt="Bitcoin Black">
+                <span class="card-label">Bitcoin Black</span>
+            </div>
+            <div class="card-option" data-card="2" data-name="Founders Edition">
+                <img src="https://github.com/sery2013/kast-card/blob/main/Founders-Edition.png?raw=true" alt="Founders Edition">
+                <span class="card-label">Founders</span>
+            </div>
+            <div class="card-option" data-card="3" data-name="K Card">
+                <img src="https://github.com/sery2013/kast-card/blob/main/K-Card.png?raw=true" alt="K Card">
+                <span class="card-label">K-Card</span>
+            </div>
+            <div class="card-option" data-card="4" data-name="Solana">
+                <img src="https://github.com/sery2013/kast-card/blob/main/Solana-Card.png?raw=true" alt="Solana">
+                <span class="card-label">Solana</span>
+            </div>
+            <div class="card-option" data-card="5" data-name="Solana Gold">
+                <img src="https://github.com/sery2013/kast-card/blob/main/Solana-Gold-Card.png?raw=true" alt="Solana Gold">
+                <span class="card-label">Solana Gold</span>
+            </div>
+            <div class="card-option" data-card="6" data-name="Solana Illuma">
+                <img src="https://github.com/sery2013/kast-card/blob/main/Solana-Illuma-Card.png?raw=true" alt="Solana Illuma">
+                <span class="card-label">Solana Illuma</span>
+            </div>
+            <div class="card-option" data-card="7" data-name="Solana Solid Gold">
+                <img src="https://github.com/sery2013/kast-card/blob/main/Solana-Solid-Gold-Card.png?raw=true" alt="Solana Solid Gold">
+                <span class="card-label">Solid Gold</span>
+            </div>
+            <div class="card-option" data-card="8" data-name="X Card">
+                <img src="https://github.com/sery2013/kast-card/blob/main/X-Card.png?raw=true" alt="X Card">
+                <span class="card-label">X-Card</span>
+            </div>
+            <div class="card-option" data-card="9" data-name="Design">
+                <img src="https://github.com/sery2013/kast-card/blob/main/design-card.png?raw=true" alt="Design">
+                <span class="card-label">Design</span>
+            </div>
+            <div class="card-option" data-card="10" data-name="Pengu Black">
+                <img src="https://github.com/sery2013/kast-card/blob/main/pengu-black.png?raw=true" alt="Pengu Black">
+                <span class="card-label">Pengu Black</span>
+            </div>
+            <div class="card-option" data-card="11" data-name="Pengu Gold">
+                <img src="https://github.com/sery2013/kast-card/blob/main/pengu-gold.png?raw=true" alt="Pengu Gold">
+                <span class="card-label">Pengu Gold</span>
+            </div>
+            <div class="card-option" data-card="12" data-name="Pengu White">
+                <img src="https://github.com/sery2013/kast-card/blob/main/pengu-white.png?raw=true" alt="Pengu White">
+                <span class="card-label">Pengu White</span>
+            </div>
+        </div>
+    </div>
+
     <div class="container">
         <div class="panel">
-            <label class="file-upload">
-                <span class="file-upload-btn">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00f2ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 8px;">
-                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
-                    </svg>
-                    Choose Avatar
-                </span>
+            <div class="file-upload">
                 <input type="file" id="avatar" accept="image/*">
-            </label>
-
-            <input type="text" id="username" placeholder="Username">
+                <label for="avatar" class="file-upload-btn">📁 Choose Avatar</label>
+            </div>
+            <input type="text" id="username" placeholder="Username" maxlength="20">
             <input type="text" id="date" class="flatpickr-input" placeholder="Join Date" readonly>
-
+            
             <div class="roles">
                 <label><input type="checkbox" value="@Staff"> @Staff</label>
                 <label><input type="checkbox" value="@KAST Evangelist"> @KAST Evangelist</label>
                 <label><input type="checkbox" value="@OG"> @OG</label>
                 <label><input type="checkbox" value="@Kah-ching"> @Kah-ching</label>
                 <label><input type="checkbox" value="@KAST Creator"> @KAST Creator</label>
-                <label><input type="checkbox" value="Member"> Member</label>
-
+                <label><input type="checkbox" value="@Member"> @Member</label>
             </div>
-
+            
             <div class="button-group">
                 <button onclick="generateCard()">Generate Card</button>
                 <button onclick="downloadCard()">Download</button>
@@ -51,13 +99,12 @@
         </div>
 
         <div class="preview-section">
-            <canvas id="cardCanvas" width="800" height="400" style="display: none;"></canvas>
             <div class="canvas-loader" id="skeleton">
-                <p>Ready to build...</p>
+                <span>Ready to build...</span>
             </div>
-
+            <canvas id="cardCanvas" width="800" height="400"></canvas>
             <div class="bio-panel">
-                <input type="text" id="userBio" placeholder="Your bio...">
+                <input type="text" id="userBio" placeholder="Your bio..." maxlength="60">
             </div>
         </div>
     </div>
@@ -65,12 +112,15 @@
     <footer class="footer">
         <p>© 2026 <a href="https://kast.xyz" class="footer-link">kast.xyz</a></p>
         <p>Developer: <a href="https://x.com/kaye_moni" class="twitter-link" target="_blank">
-            <svg class="twitter-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
             @kaye_moni
         </a></p>
     </footer>
 
+    <audio id="soundClick" src="sounds/click.mp3" preload="auto"></audio>
+    <audio id="soundScan" src="sounds/scan.mp3" preload="auto"></audio>
+
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ru.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
