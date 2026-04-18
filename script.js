@@ -44,20 +44,15 @@ function playSound(id, stop = false) {
     }
 }
 
-// Инициализация выбора карточек
 function initCardSelector() {
     const options = document.querySelectorAll('.card-option');
-    
-    // Загружаем первую карточку по умолчанию
     loadCardImage("1");
     
     options.forEach(option => {
         option.addEventListener('click', () => {
             playSound("soundClick");
-            
             options.forEach(o => o.classList.remove('active'));
             option.classList.add('active');
-            
             const cardId = option.dataset.card;
             selectedCardName = option.dataset.name;
             loadCardImage(cardId);
@@ -180,7 +175,6 @@ document.addEventListener("DOMContentLoaded", () => {
         if (el) { el.addEventListener("input", () => {}); }
     });
     
-    // Слушатель смены темы
     const themeSelect = document.getElementById("theme-mode");
     if(themeSelect) {
         themeSelect.addEventListener("change", () => {
@@ -242,13 +236,7 @@ function renderAll(ctx, canvas, avatarImg) {
     ctx.save();
     ctx.translate(glitchX, glitchY);
     
-    // === СОЗДАЕМ МАСКУ (СКРУГЛЕННЫЕ УГЛЫ) ===
-    ctx.beginPath();
-    ctx.roundRect(0, 0, canvas.width, canvas.height, 20); 
-    ctx.clip();
-    // ========================================
-    
-    // === ФОН: ВЫБРАННАЯ КАРТОЧКА ===
+    // === 1. РИСУЕМ ФОНОВУЮ КАРТУ (БЕЗ МАСКИ) ===
     if (selectedCardImage) {
         ctx.save();
         const scale = Math.min(canvas.width / selectedCardImage.width, 
@@ -264,6 +252,12 @@ function renderAll(ctx, canvas, avatarImg) {
         ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
     
+    // === 2. ВКЛЮЧАЕМ МАСКУ (СКРУГЛЕННЫЕ УГЛЫ) ===
+    ctx.beginPath();
+    ctx.roundRect(0, 0, canvas.width, canvas.height, 20); 
+    ctx.clip();
+    
+    // === 3. ВСЕ ЭЛЕМЕНТЫ РИСУЮТСЯ ВНУТРИ МАСКИ ===
     // Эффекты поверх карточки
     const topGrad = ctx.createRadialGradient(canvas.width, 0, 50, canvas.width, 0, 400);
     topGrad.addColorStop(0, isDark ? 'rgba(0, 242, 255, 0.15)' : 'rgba(0, 136, 170, 0.15)');
@@ -507,7 +501,7 @@ function renderAll(ctx, canvas, avatarImg) {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.restore();
     
-    ctx.restore(); // Закрываем clipping region
+    ctx.restore(); // ВЫКЛЮЧАЕМ МАСКУ
     
     // Сканирующая линия (рисуется ВНЕ маски)
     if (isGenerating) {
