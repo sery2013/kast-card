@@ -1,4 +1,4 @@
-// --- ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ДЛЯ ЭФФЕКТОВ ---
+// --- ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ---
 let particles = [];
 let animationId = null;
 let scanLineY = 0;
@@ -7,6 +7,26 @@ let currentAvatarImg = null;
 let reflectionPos = -500;
 let mouseX = 0;
 let mouseY = 0;
+
+// ПЕРЕМЕННЫЕ ДЛЯ ВЫБОРА КАРТОЧЕК
+let selectedCardImage = null;
+let selectedCardName = null;
+
+// ССЫЛКИ НА КАРТОЧКИ
+const cardImages = {
+    "1": "https://github.com/sery2013/kast-card/blob/main/Bitcoin-Black-Card.png?raw=true",
+    "2": "https://github.com/sery2013/kast-card/blob/main/Founders-Edition.png?raw=true",
+    "3": "https://github.com/sery2013/kast-card/blob/main/K-Card.png?raw=true",
+    "4": "https://github.com/sery2013/kast-card/blob/main/Solana-Card.png?raw=true",
+    "5": "https://github.com/sery2013/kast-card/blob/main/Solana-Gold-Card.png?raw=true",
+    "6": "https://github.com/sery2013/kast-card/blob/main/Solana-Illuma-Card.png?raw=true",
+    "7": "https://github.com/sery2013/kast-card/blob/main/Solana-Solid-Gold-Card.png?raw=true",
+    "8": "https://github.com/sery2013/kast-card/blob/main/X-Card.png?raw=true",
+    "9": "https://github.com/sery2013/kast-card/blob/main/design-card.png?raw=true",
+    "10": "https://github.com/sery2013/kast-card/blob/main/pengu-black.png?raw=true",
+    "11": "https://github.com/sery2013/kast-card/blob/main/pengu-gold.png?raw=true",
+    "12": "https://github.com/sery2013/kast-card/blob/main/pengu-white.png?raw=true"
+};
 
 window.addEventListener('mousemove', (e) => {
     mouseX = e.clientX;
@@ -22,6 +42,55 @@ function playSound(id, stop = false) {
     } else {
         s.play().catch(() => {});
     }
+}
+
+// Инициализация выбора карточек
+function initCardSelector() {
+    const options = document.querySelectorAll('.card-option');
+    
+    // Загружаем первую карточку по умолчанию
+    loadCardImage("1");
+    
+    options.forEach(option => {
+        option.addEventListener('click', () => {
+            playSound("soundClick");
+            
+            // Убираем активный класс у всех
+            options.forEach(o => o.classList.remove('active'));
+            // Добавляем активный класс к выбранной
+            option.classList.add('active');
+            
+            // Загружаем изображение карточки
+            const cardId = option.dataset.card;
+            const cardName = option.dataset.name;
+            selectedCardName = cardName;
+            
+            loadCardImage(cardId);
+        });
+    });
+}
+
+function loadCardImage(cardId) {
+    const imgUrl = cardImages[cardId];
+    if (!imgUrl) return;
+    
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+        selectedCardImage = img;
+        console.log(`Card ${cardId} loaded successfully`);
+        // Перерисовываем если canvas уже виден
+        const canvas = document.getElementById("cardCanvas");
+        if (canvas && canvas.style.display !== "none") {
+            const ctx = canvas.getContext("2d");
+            renderAll(ctx, canvas, currentAvatarImg);
+        }
+    };
+    img.onerror = () => {
+        console.error(`Failed to load card ${cardId}`);
+        selectedCardImage = null;
+    };
+    img.src = imgUrl;
 }
 
 function initDigitalFlow() {
@@ -40,6 +109,7 @@ function initDigitalFlow() {
 function initTilt() {
     const canvas = document.getElementById("cardCanvas");
     if (!canvas) return;
+    
     canvas.addEventListener("mousemove", (e) => {
         if (canvas.style.display === "none") return;
         const rect = canvas.getBoundingClientRect();
@@ -51,7 +121,7 @@ function initTilt() {
         const rotateY = ((x - centerX) / centerX) * 10;
         canvas.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
     });
-
+    
     canvas.addEventListener("mouseleave", () => {
         canvas.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg)`;
     });
@@ -60,28 +130,29 @@ function initTilt() {
 function generateCard() {
     playSound("soundClick");
     playSound("soundScan");
+    
     const canvas = document.getElementById("cardCanvas");
     const skeleton = document.getElementById("skeleton");
-
+    
     if (canvas) canvas.style.display = "block";
     if (skeleton) skeleton.style.display = "none";
-
+    
     isGenerating = true;
     canvas.classList.add("canvas-generating");
     scanLineY = 0;
-
+    
     setTimeout(() => {
         isGenerating = false;
         canvas.classList.remove("canvas-generating");
         playSound("soundScan", true);
     }, 2500);
-
+    
     const ctx = canvas.getContext("2d");
     if (particles.length === 0) initDigitalFlow();
     if (animationId) cancelAnimationFrame(animationId);
-
+    
     const avatarInput = document.getElementById("avatar");
-
+    
     if (avatarInput.files && avatarInput.files[0]) {
         const reader = new FileReader();
         reader.onload = (e) => {
@@ -96,7 +167,7 @@ function generateCard() {
     } else {
         startLoop();
     }
-
+    
     function startLoop() {
         function frame() {
             renderAll(ctx, canvas, currentAvatarImg);
@@ -104,7 +175,7 @@ function generateCard() {
         }
         animationId = requestAnimationFrame(frame);
     }
-
+    
     initTilt();
 }
 
@@ -114,6 +185,10 @@ document.addEventListener("DOMContentLoaded", () => {
         const el = document.getElementById(id);
         if (el) { el.addEventListener("input", () => {}); }
     });
+    
+    // Инициализация выбора карточек
+    initCardSelector();
+    
     if(typeof flatpickr !== 'undefined') {
         flatpickr("#date", {
             dateFormat: "m/d/Y",
@@ -143,51 +218,69 @@ function renderAll(ctx, canvas, avatarImg) {
         glitchX = Math.random() * 4 - 2;
         glitchY = Math.random() * 2 - 1;
     }
-
+    
     ctx.save();
     ctx.translate(glitchX, glitchY);
-
-    ctx.fillStyle = '#000000'; 
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
+    
+    // РИСУЕМ ВЫБРАННУЮ КАРТОЧКУ КАК ФОН
+    if (selectedCardImage) {
+        ctx.save();
+        // Рисуем карточку на весь canvas с сохранением пропорций
+        const scale = Math.max(canvas.width / selectedCardImage.width, 
+                              canvas.height / selectedCardImage.height);
+        const x = (canvas.width - selectedCardImage.width * scale) / 2;
+        const y = (canvas.height - selectedCardImage.height * scale) / 2;
+        ctx.drawImage(selectedCardImage, x, y, 
+                     selectedCardImage.width * scale, 
+                     selectedCardImage.height * scale);
+        ctx.restore();
+    } else {
+        // Если карточка не выбрана - рисуем стандартный черный фон
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+    
+    // Эффекты поверх карточки
     const topGrad = ctx.createRadialGradient(canvas.width, 0, 50, canvas.width, 0, 400);
-    topGrad.addColorStop(0, 'rgba(0, 242, 255, 0.15)'); 
+    topGrad.addColorStop(0, 'rgba(0, 242, 255, 0.15)');
     topGrad.addColorStop(1, 'rgba(0, 242, 255, 0)');
     ctx.fillStyle = topGrad;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-
+    
     const bottomGrad = ctx.createRadialGradient(0, canvas.height, 50, 0, canvas.height, 500);
-    bottomGrad.addColorStop(0, 'rgba(0, 242, 255, 0.1)'); 
+    bottomGrad.addColorStop(0, 'rgba(0, 242, 255, 0.1)');
     bottomGrad.addColorStop(1, 'rgba(0, 242, 255, 0)');
     ctx.fillStyle = bottomGrad;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-
+    
+    // Частицы
     particles.forEach(p => {
         p.y += p.speed;
         if (p.y > 400) p.y = -p.length;
         const g = ctx.createLinearGradient(0, p.y, 0, p.y + p.length);
         g.addColorStop(0, 'transparent');
-        g.addColorStop(1, `rgba(0, 242, 255, ${p.opacity})`); 
+        g.addColorStop(1, `rgba(0, 242, 255, ${p.opacity})`);
         ctx.strokeStyle = g;
         ctx.lineWidth = 1;
         ctx.beginPath();
         ctx.moveTo(p.x, p.y);
         ctx.lineTo(p.x, p.y + p.length);
         ctx.stroke();
-        ctx.fillStyle = `rgba(0, 242, 255, ${p.opacity * 2})`; 
+        ctx.fillStyle = `rgba(0, 242, 255, ${p.opacity * 2})`;
         ctx.beginPath(); ctx.arc(p.x, p.y + p.length, 1, 0, Math.PI * 2); ctx.fill();
     });
-
+    
+    // Сетка точек
     ctx.save();
-    ctx.fillStyle = "rgba(0, 242, 255, 0.03)"; 
+    ctx.fillStyle = "rgba(0, 242, 255, 0.03)";
     for (let x = 0; x < canvas.width; x += 30) {
         for (let y = 0; y < canvas.height; y += 30) {
             ctx.beginPath(); ctx.arc(x, y, 0.8, 0, Math.PI * 2); ctx.fill();
         }
     }
-    ctx.fillStyle = "rgba(0, 242, 255, 0.04)"; 
+    ctx.fillStyle = "rgba(0, 242, 255, 0.04)";
     ctx.font = "bold 40px Fredoka";
-    const symbols = ["( )", "KAST", "*", "◇"];
+    const symbols = ["()", "KAST", "*", "◇"];
     for (let i = 0; i < 10; i++) {
         for (let j = 0; j < 6; j++) {
             ctx.save();
@@ -198,12 +291,13 @@ function renderAll(ctx, canvas, avatarImg) {
         }
     }
     ctx.restore();
-
+    
+    // Аватар
     const avX = 25, avY = 70, avS = 140;
     ctx.save();
-    ctx.strokeStyle = "rgba(0, 242, 255, 0.7)"; 
+    ctx.strokeStyle = "rgba(0, 242, 255, 0.7)";
     ctx.strokeRect(avX, avY, avS, avS);
-
+    
     if (avatarImg) {
         if (isGenerating && Math.random() > 0.85) {
             ctx.globalAlpha = 0.5;
@@ -216,41 +310,45 @@ function renderAll(ctx, canvas, avatarImg) {
         ctx.fillRect(avX + 1, avY + 1, avS - 2, avS - 2);
     }
     ctx.restore();
-
+    
+    // Заголовок USER CARD
     ctx.save();
     ctx.fillStyle = "white";
     ctx.font = "bold 30px Fredoka";
-    ctx.shadowColor = "rgba(0, 242, 255, 0.6)"; 
+    ctx.shadowColor = "rgba(0, 242, 255, 0.6)";
     ctx.shadowBlur = 15;
     ctx.fillText("USER CARD", 25, 45);
     ctx.restore();
-
+    
+    // Линия
     ctx.save();
     const lineGrad = ctx.createLinearGradient(275, 0, 765, 0);
     lineGrad.addColorStop(0, "rgba(0, 242, 255, 0)");
-    lineGrad.addColorStop(0.5, "rgba(0, 242, 255, 0.5)"); 
+    lineGrad.addColorStop(0.5, "rgba(0, 242, 255, 0.5)");
     lineGrad.addColorStop(1, "rgba(0, 242, 255, 0)");
     ctx.strokeStyle = lineGrad;
     ctx.lineWidth = 1;
     ctx.beginPath(); ctx.moveTo(275, 35); ctx.lineTo(765, 35); ctx.stroke();
     ctx.restore();
-
+    
+    // Username и дата
     const username = document.getElementById("username").value || "sery2013";
     const date = document.getElementById("date").value || "03/12/2026";
     const bioText = document.getElementById("userBio").value || "Web3 Explorer & Content Enthusiast";
-
+    
     ctx.save();
-    ctx.strokeStyle = "rgba(0, 242, 255, 0.3)"; 
+    ctx.strokeStyle = "rgba(0, 242, 255, 0.3)";
     ctx.strokeRect(185, 65, 580, 50);
     ctx.fillStyle = "white"; ctx.font = "bold 24px Fredoka";
     ctx.fillText(username, 205, 100);
-
+    
     ctx.strokeStyle = "rgba(0, 242, 255, 0.2)";
     ctx.strokeRect(185, 125, 580, 40);
-    ctx.fillStyle = "#00f2ff"; ctx.font = "18px Fredoka"; 
+    ctx.fillStyle = "#00f2ff"; ctx.font = "18px Fredoka";
     ctx.fillText("Joined: " + date, 205, 152);
     ctx.restore();
-
+    
+    // Роли
     ctx.save();
     const selectedRoles = Array.from(document.querySelectorAll(".roles input[type='checkbox']")).filter(chk => chk.checked).map(chk => chk.value);
     let xStart = 185, yStart = 180;
@@ -270,37 +368,35 @@ function renderAll(ctx, canvas, avatarImg) {
         g.addColorStop(0, c2); g.addColorStop(1, c1);
         ctx.fillStyle = g;
         ctx.beginPath(); ctx.roundRect(xStart, yStart, bWidth, 25, 6); ctx.fill();
-        ctx.fillStyle = (c2 === "#ffffff") ? "black" : "white"; 
+        ctx.fillStyle = (c2 === "#ffffff") ? "black" : "white";
         ctx.fillText(role, xStart + 13, yStart + 17);
         xStart += bWidth + 10;
     });
     ctx.restore();
-
+    
+    // Био
     ctx.save();
     const bioY = yStart + 45;
-    ctx.strokeStyle = "rgba(0, 242, 255, 0.3)"; 
+    ctx.strokeStyle = "rgba(0, 242, 255, 0.3)";
     ctx.strokeRect(185, bioY, 580, 45);
-    ctx.fillStyle = "rgba(0, 242, 255, 0.05)"; 
+    ctx.fillStyle = "rgba(0, 242, 255, 0.05)";
     ctx.fillRect(185, bioY, 580, 45);
     ctx.fillStyle = "#eee"; ctx.font = "italic 16px Fredoka";
     ctx.fillText(bioText, 205, bioY + 28);
     ctx.restore();
-
+    
+    // Соцсети
     ctx.save();
     const sY = bioY + 145;
     ctx.font = "14px Fredoka"; ctx.fillStyle = "white";
     const drawIcon = (x, y, color, type) => {
-        ctx.save(); 
-        ctx.translate(x, y - 12); 
-        ctx.fillStyle = color;
+        ctx.save(); ctx.translate(x, y - 12); ctx.fillStyle = color;
         if (type === 'tg') {
             ctx.beginPath(); ctx.moveTo(0, 7); ctx.lineTo(15, 0); ctx.lineTo(13, 15); ctx.lineTo(9, 10); ctx.lineTo(9, 14); ctx.lineTo(7, 10); ctx.fill();
         } else if (type === 'x') {
             ctx.font = "bold 15px Arial"; ctx.fillStyle = "white"; ctx.fillText("𝕏", 0, 13);
         } else if (type === 'dc') {
-            // РИСУЕМ ВЕКТОРНУЮ ИКОНКУ DISCORD
-            const s = 0.8; 
-            ctx.scale(s, s);
+            const s = 0.8; ctx.scale(s, s);
             ctx.beginPath();
             ctx.moveTo(1.8, 2.5);
             ctx.bezierCurveTo(3.2, 0.8, 5.8, 0.2, 9, 0.2);
@@ -318,32 +414,32 @@ function renderAll(ctx, canvas, avatarImg) {
             ctx.bezierCurveTo(0.8, 10.8, 0.5, 7.5, 1.5, 4.2);
             ctx.closePath();
             ctx.fill();
-
-            // ВЫРЕЗАЕМ ГЛАЗА
             ctx.globalCompositeOperation = "destination-out";
             ctx.beginPath();
-            ctx.arc(6.2, 7.8, 2.2, 0, Math.PI * 2); 
-            ctx.arc(11.8, 7.8, 2.2, 0, Math.PI * 2); 
+            ctx.arc(6.2, 7.8, 2.2, 0, Math.PI * 2);
+            ctx.arc(11.8, 7.8, 2.2, 0, Math.PI * 2);
             ctx.fill();
         }
         ctx.restore();
     };
-    drawIcon(185, sY, "#00f2ff", 'x'); ctx.fillText("Twitter", 207, sY); 
+    drawIcon(185, sY, "#00f2ff", 'x'); ctx.fillText("Twitter", 207, sY);
     drawIcon(285, sY, "#00f2ff", 'tg'); ctx.fillText("Telegram", 307, sY);
     drawIcon(395, sY, "#00f2ff", 'dc'); ctx.fillText("Discord", 417, sY);
     ctx.fillText("🌐 kast.xyz", 505, sY);
     ctx.restore();
-
+    
+    // KAST лого
     ctx.save();
     ctx.textAlign = "right";
     const pulse = 10 + Math.sin(Date.now() / 500) * 8;
     const kastGrad = ctx.createLinearGradient(700, 360, 760, 360);
-    kastGrad.addColorStop(0, "#ffffff"); kastGrad.addColorStop(1, "#00f2ff"); 
+    kastGrad.addColorStop(0, "#ffffff"); kastGrad.addColorStop(1, "#00f2ff");
     ctx.fillStyle = kastGrad; ctx.font = "bold 50px Fredoka";
     ctx.shadowColor = "#00f2ff"; ctx.shadowBlur = pulse;
     ctx.fillText("KAST", 760, 360);
     ctx.restore();
-
+    
+    // QR код
     const qrSrc = "https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=https://kast.xyz";
     const qrImg = new Image();
     qrImg.crossOrigin = "anonymous";
@@ -353,36 +449,39 @@ function renderAll(ctx, canvas, avatarImg) {
         ctx.fillStyle = "rgba(0,242,255,0.3)"; ctx.font = "10px Fredoka"; ctx.textAlign = "center";
         ctx.fillText("kast.xyz", 95, 380);
     }
-
+    
+    // Глитч эффект
     if (isGenerating && Math.random() > 0.9) {
         ctx.fillStyle = "rgba(0, 242, 255, 0.15)";
         ctx.fillRect(0, Math.random() * 400, 800, Math.random() * 40);
     }
-
-    reflectionPos += 4; 
+    
+    // Блик
+    reflectionPos += 4;
     if (reflectionPos > canvas.width + 500) reflectionPos = -500;
     ctx.save();
     const reflectGrad = ctx.createLinearGradient(reflectionPos, 0, reflectionPos + 300, 400);
     reflectGrad.addColorStop(0, "rgba(255, 255, 255, 0)");
-    reflectGrad.addColorStop(0.5, "rgba(255, 255, 255, 0.1)"); 
+    reflectGrad.addColorStop(0.5, "rgba(255, 255, 255, 0.1)");
     reflectGrad.addColorStop(1, "rgba(255, 255, 255, 0)");
     ctx.fillStyle = reflectGrad;
-    ctx.globalCompositeOperation = "overlay"; 
+    ctx.globalCompositeOperation = "overlay";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.restore();
-
+    
     ctx.restore();
-
+    
+    // Сканирующая линия
     if (isGenerating) {
-        scanLineY += 8; 
+        scanLineY += 8;
         if (scanLineY > 400) scanLineY = 0;
         ctx.save();
         let scanGrad = ctx.createLinearGradient(0, scanLineY - 40, 0, scanLineY);
         scanGrad.addColorStop(0, "transparent");
-        scanGrad.addColorStop(1, "rgba(0, 242, 255, 0.4)"); 
+        scanGrad.addColorStop(1, "rgba(0, 242, 255, 0.4)");
         ctx.fillStyle = scanGrad;
         ctx.fillRect(0, scanLineY - 40, canvas.width, 40);
-        ctx.strokeStyle = "#00f2ff"; 
+        ctx.strokeStyle = "#00f2ff";
         ctx.lineWidth = 2;
         ctx.shadowBlur = 15;
         ctx.shadowColor = "#00f2ff";
@@ -400,6 +499,7 @@ function downloadCard() {
     link.click();
 }
 
+// Фоновая анимация
 (function() {
     const bgCanvas = document.getElementById("bgCanvas");
     if (!bgCanvas) return;
@@ -417,9 +517,9 @@ function downloadCard() {
             op: Math.random() * 0.3
         }));
     }
-
+    
     function animate() {
-        bgCtx.fillStyle = '#000000'; 
+        bgCtx.fillStyle = '#000000';
         bgCtx.fillRect(0, 0, bgCanvas.width, bgCanvas.height);
         
         bgLines.forEach(l => {
@@ -431,26 +531,26 @@ function downloadCard() {
             if (dist < 250) {
                 currentSpeed += (1 - dist/250) * 6;
             }
-
+            
             l.y += currentSpeed;
-            if (l.y > bgCanvas.height) { 
-                l.y = -l.len; 
-                l.x = Math.random() * bgCanvas.width; 
+            if (l.y > bgCanvas.height) {
+                l.y = -l.len;
+                l.x = Math.random() * bgCanvas.width;
             }
             
             let g = bgCtx.createLinearGradient(0, l.y, 0, l.y + l.len);
             g.addColorStop(0, 'transparent');
-            g.addColorStop(1, `rgba(0, 242, 255, ${l.op})`); 
+            g.addColorStop(1, `rgba(0, 242, 255, ${l.op})`);
             bgCtx.strokeStyle = g;
             bgCtx.lineWidth = 1.2;
-            bgCtx.beginPath(); 
-            bgCtx.moveTo(l.x, l.y); 
-            bgCtx.lineTo(l.x, l.y + l.len); 
+            bgCtx.beginPath();
+            bgCtx.moveTo(l.x, l.y);
+            bgCtx.lineTo(l.x, l.y + l.len);
             bgCtx.stroke();
         });
         requestAnimationFrame(animate);
     }
-
+    
     window.addEventListener('resize', init);
     init();
     animate();
