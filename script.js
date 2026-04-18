@@ -47,11 +47,14 @@ function playSound(id, stop = false) {
 // Инициализация выбора карточек
 function initCardSelector() {
     const options = document.querySelectorAll('.card-option');
+    
+    // Загружаем первую карточку по умолчанию
     loadCardImage("1");
     
     options.forEach(option => {
         option.addEventListener('click', () => {
             playSound("soundClick");
+            
             options.forEach(o => o.classList.remove('active'));
             option.classList.add('active');
             
@@ -71,7 +74,6 @@ function loadCardImage(cardId) {
     img.onload = () => {
         selectedCardImage = img;
         console.log(`✅ Card ${cardId} (${selectedCardName}) loaded`);
-        // Если canvas уже открыт, перерисовываем
         const canvas = document.getElementById("cardCanvas");
         if (canvas && canvas.style.display !== "none") {
             const ctx = canvas.getContext("2d");
@@ -209,19 +211,18 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function renderAll(ctx, canvas, avatarImg) {
-    // ОПРЕДЕЛЯЕМ ЦВЕТА В ЗАВИСИМОСТИ ОТ ВЫБРАННОЙ ТЕМЫ
     const theme = document.getElementById("theme-mode").value;
     const isDark = theme === "dark";
 
     const colorMainText = isDark ? "#ffffff" : "#1a1a1a";
-    const colorAccent = isDark ? "#00f2ff" : "#0088aa"; // Чуть темнее для светлой темы
+    const colorAccent = isDark ? "#00f2ff" : "#0088aa";
     const colorSecondaryText = isDark ? "#00f2ff" : "#0088aa";
     const colorBoxBg = isDark ? "rgba(0,0,0,0.5)" : "rgba(255,255,255,0.7)";
     const colorBoxStroke = isDark ? "rgba(0, 242, 255, 0.3)" : "rgba(0, 136, 170, 0.3)";
     const colorEmptyAvatar = isDark ? "#0a0a0a" : "#e0e0e0";
     const colorBio = isDark ? "#eeeeee" : "#444444";
     const colorBioBox = isDark ? "rgba(0, 242, 255, 0.05)" : "rgba(0, 136, 170, 0.05)";
-    const shadowColorText = isDark ? "rgba(0,0,0,0.8)" : "rgba(255,255,255,0.8)"; // Тень для контраста
+    const shadowColorText = isDark ? "rgba(0,0,0,0.8)" : "rgba(255,255,255,0.8)";
     const colorLineGradStart = isDark ? "rgba(0, 242, 255, 0)" : "rgba(0, 136, 170, 0)";
     const colorLineGradEnd = isDark ? "rgba(0, 242, 255, 0.5)" : "rgba(0, 136, 170, 0.5)";
 
@@ -257,7 +258,7 @@ function renderAll(ctx, canvas, avatarImg) {
         ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
     
-    // Эффекты поверх карточки (градиенты)
+    // Эффекты поверх карточки
     const topGrad = ctx.createRadialGradient(canvas.width, 0, 50, canvas.width, 0, 400);
     topGrad.addColorStop(0, isDark ? 'rgba(0, 242, 255, 0.15)' : 'rgba(0, 136, 170, 0.15)');
     topGrad.addColorStop(1, 'rgba(0, 242, 255, 0)');
@@ -385,7 +386,6 @@ function renderAll(ctx, canvas, avatarImg) {
     let xStart = 185, yStart = 180;
     selectedRoles.forEach(role => {
         let c1, c2;
-        // Базовые цвета для ролей
         if (role === "@Staff") { c1 = "#004e52"; c2 = "#00f2ff"; }
         else if (role === "@KAST Evangelist") { c1 = "#005a5d"; c2 = "#00f2ff"; }
         else if (role === "@OG") { c1 = "#006a6e"; c2 = "#ffffff"; }
@@ -393,9 +393,7 @@ function renderAll(ctx, canvas, avatarImg) {
         else if (role === "@KAST Creator") { c1 = "#006063"; c2 = "#ffffff"; }
         else { c1 = "#002a2c"; c2 = "#00f2ff"; }
         
-        // Адаптация под светлую тему
         if (!isDark) {
-             // Для светлой темы делаем рамки темнее
              c1 = "#003333"; 
              c2 = "#005566";
         }
@@ -409,7 +407,6 @@ function renderAll(ctx, canvas, avatarImg) {
         ctx.fillStyle = g;
         ctx.beginPath(); ctx.roundRect(xStart, yStart, bWidth, 25, 6); ctx.fill();
         
-        // Цвет текста роли
         ctx.fillStyle = isDark ? ((role === "@OG" || role === "@KAST Creator") ? "#000000" : "#ffffff") : "#ffffff";
         ctx.fillText(role, xStart + 13, yStart + 17);
         xStart += bWidth + 10;
@@ -474,17 +471,7 @@ function renderAll(ctx, canvas, avatarImg) {
     ctx.fillText("🌐 kast.xyz", 505, sY);
     ctx.restore();
     
-    // KAST лого
-    ctx.save();
-    ctx.textAlign = "right";
-    const pulse = 10 + Math.sin(Date.now() / 500) * 8;
-    const kastGrad = ctx.createLinearGradient(700, 360, 760, 360);
-    kastGrad.addColorStop(0, colorMainText); 
-    kastGrad.addColorStop(1, colorAccent);
-    ctx.fillStyle = kastGrad; ctx.font = "bold 50px Fredoka";
-    ctx.shadowColor = colorAccent; ctx.shadowBlur = pulse;
-    ctx.fillText("KAST", 760, 360);
-    ctx.restore();
+    // [УДАЛЕН БЛОК С ЛОГОТИПОМ KAST, ЧТОБЫ НЕ ЗАКРЫВАТЬ ФОН]
     
     // QR код
     const qrSrc = "https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=https://kast.xyz";
