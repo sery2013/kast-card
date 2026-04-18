@@ -8,7 +8,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <!-- ВАЖНО: Путь к style.css должен быть точным -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -20,6 +19,7 @@
         </div>
     </a>
 
+    <!-- СЕКЦИЯ ВЫБОРА КАРТОЧЕК -->
     <div class="card-selector">
         <h3 class="selector-title">Choose Card Design</h3>
         <div class="card-grid">
@@ -100,10 +100,12 @@
         </div>
 
         <div class="preview-section">
+            <!-- Скетон (виден по умолчанию) -->
             <div class="canvas-loader" id="skeleton">
                 <span>Ready to build...</span>
             </div>
-            <canvas id="cardCanvas" width="800" height="400"></canvas>
+            <!-- Canvas скрыт по умолчанию -->
+            <canvas id="cardCanvas" width="800" height="400" style="display: none;"></canvas>
         </div>
     </div>
 
