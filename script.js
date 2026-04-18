@@ -14,18 +14,18 @@ let selectedCardName = null;
 
 // ССЫЛКИ НА КАРТОЧКИ
 const cardImages = {
-    "1": "https://github.com/sery2013/kast-card/blob/main/Bitcoin-Black-Card.png?raw=true",
-    "2": "https://github.com/sery2013/kast-card/blob/main/Founders-Edition.png?raw=true",
-    "3": "https://github.com/sery2013/kast-card/blob/main/K-Card.png?raw=true",
-    "4": "https://github.com/sery2013/kast-card/blob/main/Solana-Card.png?raw=true",
-    "5": "https://github.com/sery2013/kast-card/blob/main/Solana-Gold-Card.png?raw=true",
-    "6": "https://github.com/sery2013/kast-card/blob/main/Solana-Illuma-Card.png?raw=true",
-    "7": "https://github.com/sery2013/kast-card/blob/main/Solana-Solid-Gold-Card.png?raw=true",
-    "8": "https://github.com/sery2013/kast-card/blob/main/X-Card.png?raw=true",
-    "9": "https://github.com/sery2013/kast-card/blob/main/design-card.png?raw=true",
-    "10": "https://github.com/sery2013/kast-card/blob/main/pengu-black.png?raw=true",
-    "11": "https://github.com/sery2013/kast-card/blob/main/pengu-gold.png?raw=true",
-    "12": "https://github.com/sery2013/kast-card/blob/main/pengu-white.png?raw=true"
+    "1": "https://raw.githubusercontent.com/sery2013/kast-card/main/Bitcoin-Black-Card.png",
+    "2": "https://raw.githubusercontent.com/sery2013/kast-card/main/Founders-Edition.png",
+    "3": "https://raw.githubusercontent.com/sery2013/kast-card/main/K-Card.png",
+    "4": "https://raw.githubusercontent.com/sery2013/kast-card/main/Solana-Card.png",
+    "5": "https://raw.githubusercontent.com/sery2013/kast-card/main/Solana-Gold-Card.png",
+    "6": "https://raw.githubusercontent.com/sery2013/kast-card/main/Solana-Illuma-Card.png",
+    "7": "https://raw.githubusercontent.com/sery2013/kast-card/main/Solana-Solid-Gold-Card.png",
+    "8": "https://raw.githubusercontent.com/sery2013/kast-card/main/X-Card.png",
+    "9": "https://raw.githubusercontent.com/sery2013/kast-card/main/design-card.png",
+    "10": "https://raw.githubusercontent.com/sery2013/kast-card/main/pengu-black.png",
+    "11": "https://raw.githubusercontent.com/sery2013/kast-card/main/pengu-gold.png",
+    "12": "https://raw.githubusercontent.com/sery2013/kast-card/main/pengu-white.png"
 };
 
 window.addEventListener('mousemove', (e) => {
@@ -78,7 +78,7 @@ function loadCardImage(cardId) {
     img.crossOrigin = "anonymous";
     img.onload = () => {
         selectedCardImage = img;
-        console.log(`Card ${cardId} loaded successfully`);
+        console.log(`✅ Card ${cardId} (${selectedCardName}) loaded: ${img.width}x${img.height}`);
         // Перерисовываем если canvas уже виден
         const canvas = document.getElementById("cardCanvas");
         if (canvas && canvas.style.display !== "none") {
@@ -87,7 +87,7 @@ function loadCardImage(cardId) {
         }
     };
     img.onerror = () => {
-        console.error(`Failed to load card ${cardId}`);
+        console.error(`❌ Failed to load card ${cardId}`);
         selectedCardImage = null;
     };
     img.src = imgUrl;
@@ -222,10 +222,9 @@ function renderAll(ctx, canvas, avatarImg) {
     ctx.save();
     ctx.translate(glitchX, glitchY);
     
-    // РИСУЕМ ВЫБРАННУЮ КАРТОЧКУ КАК ФОН
+    // === РИСУЕМ ВЫБРАННУЮ КАРТОЧКУ КАК ФОН ===
     if (selectedCardImage) {
         ctx.save();
-        // Рисуем карточку на весь canvas с сохранением пропорций
         const scale = Math.max(canvas.width / selectedCardImage.width, 
                               canvas.height / selectedCardImage.height);
         const x = (canvas.width - selectedCardImage.width * scale) / 2;
