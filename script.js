@@ -242,6 +242,12 @@ function renderAll(ctx, canvas, avatarImg) {
     ctx.save();
     ctx.translate(glitchX, glitchY);
     
+    // === СОЗДАЕМ МАСКУ (СКРУГЛЕННЫЕ УГЛЫ) ===
+    ctx.beginPath();
+    ctx.roundRect(0, 0, canvas.width, canvas.height, 20); 
+    ctx.clip();
+    // ========================================
+    
     // === ФОН: ВЫБРАННАЯ КАРТОЧКА ===
     if (selectedCardImage) {
         ctx.save();
@@ -471,8 +477,6 @@ function renderAll(ctx, canvas, avatarImg) {
     ctx.fillText("🌐 kast.xyz", 505, sY);
     ctx.restore();
     
-    // [УДАЛЕН БЛОК С ЛОГОТИПОМ KAST, ЧТОБЫ НЕ ЗАКРЫВАТЬ ФОН]
-    
     // QR код
     const qrSrc = "https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=https://kast.xyz";
     const qrImg = new Image();
@@ -503,9 +507,9 @@ function renderAll(ctx, canvas, avatarImg) {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.restore();
     
-    ctx.restore();
+    ctx.restore(); // Закрываем clipping region
     
-    // Сканирующая линия
+    // Сканирующая линия (рисуется ВНЕ маски)
     if (isGenerating) {
         scanLineY += 8;
         if (scanLineY > 400) scanLineY = 0;
