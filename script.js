@@ -134,8 +134,9 @@ function generateCard() {
     const canvas = document.getElementById("cardCanvas");
     const skeleton = document.getElementById("skeleton");
     
-    if (canvas) canvas.style.display = "block";
-    if (skeleton) skeleton.style.display = "none";
+    // ПОКАЗЫВАЕМ CANVAS, СКРЫВАЕМ СКЕЛЕТОН
+    canvas.style.display = "block";
+    skeleton.style.display = "none";
     
     isGenerating = true;
     canvas.classList.add("canvas-generating");
@@ -234,7 +235,6 @@ function renderAll(ctx, canvas, avatarImg) {
                      selectedCardImage.height * scale);
         ctx.restore();
     } else {
-        // Если карточка не выбрана - рисуем стандартный черный фон
         ctx.fillStyle = '#000000';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
@@ -492,6 +492,9 @@ function renderAll(ctx, canvas, avatarImg) {
 function downloadCard() {
     playSound("soundClick");
     const canvas = document.getElementById("cardCanvas");
+    // Если canvas скрыт, ничего не делаем
+    if (canvas.style.display === "none") return;
+    
     const link = document.createElement("a");
     link.download = "kast-animated-card.png";
     link.href = canvas.toDataURL("image/png");
