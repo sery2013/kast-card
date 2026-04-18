@@ -47,24 +47,16 @@ function playSound(id, stop = false) {
 // Инициализация выбора карточек
 function initCardSelector() {
     const options = document.querySelectorAll('.card-option');
-    
-    // Загружаем первую карточку по умолчанию
     loadCardImage("1");
     
     options.forEach(option => {
         option.addEventListener('click', () => {
             playSound("soundClick");
-            
-            // Убираем активный класс у всех
             options.forEach(o => o.classList.remove('active'));
-            // Добавляем активный класс к выбранной
             option.classList.add('active');
             
-            // Загружаем изображение карточки
             const cardId = option.dataset.card;
-            const cardName = option.dataset.name;
-            selectedCardName = cardName;
-            
+            selectedCardName = option.dataset.name;
             loadCardImage(cardId);
         });
     });
@@ -78,8 +70,8 @@ function loadCardImage(cardId) {
     img.crossOrigin = "anonymous";
     img.onload = () => {
         selectedCardImage = img;
-        console.log(`✅ Card ${cardId} (${selectedCardName}) loaded: ${img.width}x${img.height}`);
-        // Перерисовываем если canvas уже виден
+        console.log(`✅ Card ${cardId} (${selectedCardName}) loaded`);
+        // Если canvas уже открыт, перерисовываем
         const canvas = document.getElementById("cardCanvas");
         if (canvas && canvas.style.display !== "none") {
             const ctx = canvas.getContext("2d");
@@ -134,7 +126,6 @@ function generateCard() {
     const canvas = document.getElementById("cardCanvas");
     const skeleton = document.getElementById("skeleton");
     
-    // ПОКАЗЫВАЕМ CANVAS, СКРЫВАЕМ СКЕЛЕТОН
     canvas.style.display = "block";
     skeleton.style.display = "none";
     
@@ -187,7 +178,18 @@ document.addEventListener("DOMContentLoaded", () => {
         if (el) { el.addEventListener("input", () => {}); }
     });
     
-    // Инициализация выбора карточек
+    // Слушатель смены темы
+    const themeSelect = document.getElementById("theme-mode");
+    if(themeSelect) {
+        themeSelect.addEventListener("change", () => {
+            const canvas = document.getElementById("cardCanvas");
+            if (canvas && canvas.style.display !== "none") {
+                const ctx = canvas.getContext("2d");
+                renderAll(ctx, canvas, currentAvatarImg);
+            }
+        });
+    }
+
     initCardSelector();
     
     if(typeof flatpickr !== 'undefined') {
@@ -207,6 +209,22 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function renderAll(ctx, canvas, avatarImg) {
+    // ОПРЕДЕЛЯЕМ ЦВЕТА В ЗАВИСИМОСТИ ОТ ВЫБРАННОЙ ТЕМЫ
+    const theme = document.getElementById("theme-mode").value;
+    const isDark = theme === "dark";
+
+    const colorMainText = isDark ? "#ffffff" : "#1a1a1a";
+    const colorAccent = isDark ? "#00f2ff" : "#0088aa"; // Чуть темнее для светлой темы
+    const colorSecondaryText = isDark ? "#00f2ff" : "#0088aa";
+    const colorBoxBg = isDark ? "rgba(0,0,0,0.5)" : "rgba(255,255,255,0.7)";
+    const colorBoxStroke = isDark ? "rgba(0, 242, 255, 0.3)" : "rgba(0, 136, 170, 0.3)";
+    const colorEmptyAvatar = isDark ? "#0a0a0a" : "#e0e0e0";
+    const colorBio = isDark ? "#eeeeee" : "#444444";
+    const colorBioBox = isDark ? "rgba(0, 242, 255, 0.05)" : "rgba(0, 136, 170, 0.05)";
+    const shadowColorText = isDark ? "rgba(0,0,0,0.8)" : "rgba(255,255,255,0.8)"; // Тень для контраста
+    const colorLineGradStart = isDark ? "rgba(0, 242, 255, 0)" : "rgba(0, 136, 170, 0)";
+    const colorLineGradEnd = isDark ? "rgba(0, 242, 255, 0.5)" : "rgba(0, 136, 170, 0.5)";
+
     ctx.textAlign = "left";
     ctx.textBaseline = "alphabetic";
     ctx.shadowBlur = 0;
@@ -223,7 +241,7 @@ function renderAll(ctx, canvas, avatarImg) {
     ctx.save();
     ctx.translate(glitchX, glitchY);
     
-    // === РИСУЕМ ВЫБРАННУЮ КАРТОЧКУ КАК ФОН ===
+    // === ФОН: ВЫБРАННАЯ КАРТОЧКА ===
     if (selectedCardImage) {
         ctx.save();
         const scale = Math.max(canvas.width / selectedCardImage.width, 
@@ -235,19 +253,19 @@ function renderAll(ctx, canvas, avatarImg) {
                      selectedCardImage.height * scale);
         ctx.restore();
     } else {
-        ctx.fillStyle = '#000000';
+        ctx.fillStyle = isDark ? '#000000' : '#f0f0f0';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
     
-    // Эффекты поверх карточки
+    // Эффекты поверх карточки (градиенты)
     const topGrad = ctx.createRadialGradient(canvas.width, 0, 50, canvas.width, 0, 400);
-    topGrad.addColorStop(0, 'rgba(0, 242, 255, 0.15)');
+    topGrad.addColorStop(0, isDark ? 'rgba(0, 242, 255, 0.15)' : 'rgba(0, 136, 170, 0.15)');
     topGrad.addColorStop(1, 'rgba(0, 242, 255, 0)');
     ctx.fillStyle = topGrad;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
     const bottomGrad = ctx.createRadialGradient(0, canvas.height, 50, 0, canvas.height, 500);
-    bottomGrad.addColorStop(0, 'rgba(0, 242, 255, 0.1)');
+    bottomGrad.addColorStop(0, isDark ? 'rgba(0, 242, 255, 0.1)' : 'rgba(0, 136, 170, 0.1)');
     bottomGrad.addColorStop(1, 'rgba(0, 242, 255, 0)');
     ctx.fillStyle = bottomGrad;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -258,26 +276,26 @@ function renderAll(ctx, canvas, avatarImg) {
         if (p.y > 400) p.y = -p.length;
         const g = ctx.createLinearGradient(0, p.y, 0, p.y + p.length);
         g.addColorStop(0, 'transparent');
-        g.addColorStop(1, `rgba(0, 242, 255, ${p.opacity})`);
+        g.addColorStop(1, isDark ? `rgba(0, 242, 255, ${p.opacity})` : `rgba(0, 136, 170, ${p.opacity})`);
         ctx.strokeStyle = g;
         ctx.lineWidth = 1;
         ctx.beginPath();
         ctx.moveTo(p.x, p.y);
         ctx.lineTo(p.x, p.y + p.length);
         ctx.stroke();
-        ctx.fillStyle = `rgba(0, 242, 255, ${p.opacity * 2})`;
+        ctx.fillStyle = isDark ? `rgba(0, 242, 255, ${p.opacity * 2})` : `rgba(0, 136, 170, ${p.opacity * 2})`;
         ctx.beginPath(); ctx.arc(p.x, p.y + p.length, 1, 0, Math.PI * 2); ctx.fill();
     });
     
     // Сетка точек
     ctx.save();
-    ctx.fillStyle = "rgba(0, 242, 255, 0.03)";
+    ctx.fillStyle = isDark ? "rgba(0, 242, 255, 0.03)" : "rgba(0, 136, 170, 0.03)";
     for (let x = 0; x < canvas.width; x += 30) {
         for (let y = 0; y < canvas.height; y += 30) {
             ctx.beginPath(); ctx.arc(x, y, 0.8, 0, Math.PI * 2); ctx.fill();
         }
     }
-    ctx.fillStyle = "rgba(0, 242, 255, 0.04)";
+    ctx.fillStyle = isDark ? "rgba(0, 242, 255, 0.04)" : "rgba(0, 136, 170, 0.04)";
     ctx.font = "bold 40px Fredoka";
     const symbols = ["()", "KAST", "*", "◇"];
     for (let i = 0; i < 10; i++) {
@@ -294,7 +312,8 @@ function renderAll(ctx, canvas, avatarImg) {
     // Аватар
     const avX = 25, avY = 70, avS = 140;
     ctx.save();
-    ctx.strokeStyle = "rgba(0, 242, 255, 0.7)";
+    ctx.strokeStyle = colorAccent;
+    ctx.lineWidth = 2;
     ctx.strokeRect(avX, avY, avS, avS);
     
     if (avatarImg) {
@@ -305,16 +324,16 @@ function renderAll(ctx, canvas, avatarImg) {
         }
         ctx.drawImage(avatarImg, avX + 1, avY + 1, avS - 2, avS - 2);
     } else {
-        ctx.fillStyle = "#0a0a0a";
+        ctx.fillStyle = colorEmptyAvatar;
         ctx.fillRect(avX + 1, avY + 1, avS - 2, avS - 2);
     }
     ctx.restore();
     
     // Заголовок USER CARD
     ctx.save();
-    ctx.fillStyle = "white";
+    ctx.fillStyle = colorMainText;
     ctx.font = "bold 30px Fredoka";
-    ctx.shadowColor = "rgba(0, 242, 255, 0.6)";
+    ctx.shadowColor = shadowColorText;
     ctx.shadowBlur = 15;
     ctx.fillText("USER CARD", 25, 45);
     ctx.restore();
@@ -322,9 +341,9 @@ function renderAll(ctx, canvas, avatarImg) {
     // Линия
     ctx.save();
     const lineGrad = ctx.createLinearGradient(275, 0, 765, 0);
-    lineGrad.addColorStop(0, "rgba(0, 242, 255, 0)");
-    lineGrad.addColorStop(0.5, "rgba(0, 242, 255, 0.5)");
-    lineGrad.addColorStop(1, "rgba(0, 242, 255, 0)");
+    lineGrad.addColorStop(0, colorLineGradStart);
+    lineGrad.addColorStop(0.5, colorLineGradEnd);
+    lineGrad.addColorStop(1, colorLineGradStart);
     ctx.strokeStyle = lineGrad;
     ctx.lineWidth = 1;
     ctx.beginPath(); ctx.moveTo(275, 35); ctx.lineTo(765, 35); ctx.stroke();
@@ -335,15 +354,28 @@ function renderAll(ctx, canvas, avatarImg) {
     const date = document.getElementById("date").value || "03/12/2026";
     const bioText = document.getElementById("userBio").value || "Web3 Explorer & Content Enthusiast";
     
+    // Блок Username
     ctx.save();
-    ctx.strokeStyle = "rgba(0, 242, 255, 0.3)";
-    ctx.strokeRect(185, 65, 580, 50);
-    ctx.fillStyle = "white"; ctx.font = "bold 24px Fredoka";
-    ctx.fillText(username, 205, 100);
+    ctx.fillStyle = colorBoxBg;
+    ctx.strokeStyle = colorBoxStroke;
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.roundRect(185, 65, 580, 50, 8); ctx.fill(); ctx.stroke();
     
-    ctx.strokeStyle = "rgba(0, 242, 255, 0.2)";
-    ctx.strokeRect(185, 125, 580, 40);
-    ctx.fillStyle = "#00f2ff"; ctx.font = "18px Fredoka";
+    ctx.fillStyle = colorMainText; 
+    ctx.font = "bold 24px Fredoka";
+    ctx.shadowColor = "transparent";
+    ctx.fillText(username, 205, 97);
+    ctx.restore();
+    
+    // Блок Joined
+    ctx.save();
+    ctx.fillStyle = colorBoxBg;
+    ctx.strokeStyle = colorBoxStroke;
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.roundRect(185, 125, 580, 40, 8); ctx.fill(); ctx.stroke();
+    
+    ctx.fillStyle = colorSecondaryText; 
+    ctx.font = "18px Fredoka";
     ctx.fillText("Joined: " + date, 205, 152);
     ctx.restore();
     
@@ -353,6 +385,7 @@ function renderAll(ctx, canvas, avatarImg) {
     let xStart = 185, yStart = 180;
     selectedRoles.forEach(role => {
         let c1, c2;
+        // Базовые цвета для ролей
         if (role === "@Staff") { c1 = "#004e52"; c2 = "#00f2ff"; }
         else if (role === "@KAST Evangelist") { c1 = "#005a5d"; c2 = "#00f2ff"; }
         else if (role === "@OG") { c1 = "#006a6e"; c2 = "#ffffff"; }
@@ -360,14 +393,24 @@ function renderAll(ctx, canvas, avatarImg) {
         else if (role === "@KAST Creator") { c1 = "#006063"; c2 = "#ffffff"; }
         else { c1 = "#002a2c"; c2 = "#00f2ff"; }
         
+        // Адаптация под светлую тему
+        if (!isDark) {
+             // Для светлой темы делаем рамки темнее
+             c1 = "#003333"; 
+             c2 = "#005566";
+        }
+        
         ctx.font = "bold 13px Fredoka";
         const bWidth = ctx.measureText(role).width + 26;
         if(xStart + bWidth > canvas.width - 20) { xStart = 185; yStart += 35; }
+        
         const g = ctx.createLinearGradient(xStart, yStart, xStart, yStart + 25);
         g.addColorStop(0, c2); g.addColorStop(1, c1);
         ctx.fillStyle = g;
         ctx.beginPath(); ctx.roundRect(xStart, yStart, bWidth, 25, 6); ctx.fill();
-        ctx.fillStyle = (c2 === "#ffffff") ? "black" : "white";
+        
+        // Цвет текста роли
+        ctx.fillStyle = isDark ? ((role === "@OG" || role === "@KAST Creator") ? "#000000" : "#ffffff") : "#ffffff";
         ctx.fillText(role, xStart + 13, yStart + 17);
         xStart += bWidth + 10;
     });
@@ -376,24 +419,28 @@ function renderAll(ctx, canvas, avatarImg) {
     // Био
     ctx.save();
     const bioY = yStart + 45;
-    ctx.strokeStyle = "rgba(0, 242, 255, 0.3)";
-    ctx.strokeRect(185, bioY, 580, 45);
-    ctx.fillStyle = "rgba(0, 242, 255, 0.05)";
-    ctx.fillRect(185, bioY, 580, 45);
-    ctx.fillStyle = "#eee"; ctx.font = "italic 16px Fredoka";
+    ctx.fillStyle = colorBioBox;
+    ctx.strokeStyle = colorBoxStroke;
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.roundRect(185, bioY, 580, 45, 8); ctx.fill(); ctx.stroke();
+    
+    ctx.fillStyle = colorBio; 
+    ctx.font = "italic 16px Fredoka";
+    ctx.shadowColor = "transparent";
     ctx.fillText(bioText, 205, bioY + 28);
     ctx.restore();
     
     // Соцсети
     ctx.save();
     const sY = bioY + 145;
-    ctx.font = "14px Fredoka"; ctx.fillStyle = "white";
+    ctx.font = "14px Fredoka"; ctx.fillStyle = colorMainText;
+    
     const drawIcon = (x, y, color, type) => {
         ctx.save(); ctx.translate(x, y - 12); ctx.fillStyle = color;
         if (type === 'tg') {
             ctx.beginPath(); ctx.moveTo(0, 7); ctx.lineTo(15, 0); ctx.lineTo(13, 15); ctx.lineTo(9, 10); ctx.lineTo(9, 14); ctx.lineTo(7, 10); ctx.fill();
         } else if (type === 'x') {
-            ctx.font = "bold 15px Arial"; ctx.fillStyle = "white"; ctx.fillText("𝕏", 0, 13);
+            ctx.font = "bold 15px Arial"; ctx.fillStyle = colorMainText; ctx.fillText("𝕏", 0, 13);
         } else if (type === 'dc') {
             const s = 0.8; ctx.scale(s, s);
             ctx.beginPath();
@@ -421,9 +468,9 @@ function renderAll(ctx, canvas, avatarImg) {
         }
         ctx.restore();
     };
-    drawIcon(185, sY, "#00f2ff", 'x'); ctx.fillText("Twitter", 207, sY);
-    drawIcon(285, sY, "#00f2ff", 'tg'); ctx.fillText("Telegram", 307, sY);
-    drawIcon(395, sY, "#00f2ff", 'dc'); ctx.fillText("Discord", 417, sY);
+    drawIcon(185, sY, colorAccent, 'x'); ctx.fillText("Twitter", 207, sY);
+    drawIcon(285, sY, colorAccent, 'tg'); ctx.fillText("Telegram", 307, sY);
+    drawIcon(395, sY, colorAccent, 'dc'); ctx.fillText("Discord", 417, sY);
     ctx.fillText("🌐 kast.xyz", 505, sY);
     ctx.restore();
     
@@ -432,9 +479,10 @@ function renderAll(ctx, canvas, avatarImg) {
     ctx.textAlign = "right";
     const pulse = 10 + Math.sin(Date.now() / 500) * 8;
     const kastGrad = ctx.createLinearGradient(700, 360, 760, 360);
-    kastGrad.addColorStop(0, "#ffffff"); kastGrad.addColorStop(1, "#00f2ff");
+    kastGrad.addColorStop(0, colorMainText); 
+    kastGrad.addColorStop(1, colorAccent);
     ctx.fillStyle = kastGrad; ctx.font = "bold 50px Fredoka";
-    ctx.shadowColor = "#00f2ff"; ctx.shadowBlur = pulse;
+    ctx.shadowColor = colorAccent; ctx.shadowBlur = pulse;
     ctx.fillText("KAST", 760, 360);
     ctx.restore();
     
@@ -445,13 +493,13 @@ function renderAll(ctx, canvas, avatarImg) {
     qrImg.src = qrSrc;
     if (qrImg.complete) {
         ctx.drawImage(qrImg, 35, 245, 120, 120);
-        ctx.fillStyle = "rgba(0,242,255,0.3)"; ctx.font = "10px Fredoka"; ctx.textAlign = "center";
+        ctx.fillStyle = colorSecondaryText; ctx.font = "10px Fredoka"; ctx.textAlign = "center";
         ctx.fillText("kast.xyz", 95, 380);
     }
     
     // Глитч эффект
     if (isGenerating && Math.random() > 0.9) {
-        ctx.fillStyle = "rgba(0, 242, 255, 0.15)";
+        ctx.fillStyle = isDark ? "rgba(0, 242, 255, 0.15)" : "rgba(0, 136, 170, 0.15)";
         ctx.fillRect(0, Math.random() * 400, 800, Math.random() * 40);
     }
     
@@ -461,7 +509,7 @@ function renderAll(ctx, canvas, avatarImg) {
     ctx.save();
     const reflectGrad = ctx.createLinearGradient(reflectionPos, 0, reflectionPos + 300, 400);
     reflectGrad.addColorStop(0, "rgba(255, 255, 255, 0)");
-    reflectGrad.addColorStop(0.5, "rgba(255, 255, 255, 0.1)");
+    reflectGrad.addColorStop(0.5, isDark ? "rgba(255, 255, 255, 0.1)" : "rgba(255, 255, 255, 0.3)");
     reflectGrad.addColorStop(1, "rgba(255, 255, 255, 0)");
     ctx.fillStyle = reflectGrad;
     ctx.globalCompositeOperation = "overlay";
@@ -477,13 +525,13 @@ function renderAll(ctx, canvas, avatarImg) {
         ctx.save();
         let scanGrad = ctx.createLinearGradient(0, scanLineY - 40, 0, scanLineY);
         scanGrad.addColorStop(0, "transparent");
-        scanGrad.addColorStop(1, "rgba(0, 242, 255, 0.4)");
+        scanGrad.addColorStop(1, isDark ? "rgba(0, 242, 255, 0.4)" : "rgba(0, 136, 170, 0.4)");
         ctx.fillStyle = scanGrad;
         ctx.fillRect(0, scanLineY - 40, canvas.width, 40);
-        ctx.strokeStyle = "#00f2ff";
+        ctx.strokeStyle = colorAccent;
         ctx.lineWidth = 2;
         ctx.shadowBlur = 15;
-        ctx.shadowColor = "#00f2ff";
+        ctx.shadowColor = colorAccent;
         ctx.beginPath(); ctx.moveTo(0, scanLineY); ctx.lineTo(canvas.width, scanLineY); ctx.stroke();
         ctx.restore();
     }
@@ -492,7 +540,6 @@ function renderAll(ctx, canvas, avatarImg) {
 function downloadCard() {
     playSound("soundClick");
     const canvas = document.getElementById("cardCanvas");
-    // Если canvas скрыт, ничего не делаем
     if (canvas.style.display === "none") return;
     
     const link = document.createElement("a");
