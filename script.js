@@ -8,9 +8,11 @@ let reflectionPos = -500;
 let mouseX = 0;
 let mouseY = 0;
 
+// ПЕРЕМЕННЫЕ ДЛЯ ВЫБОРА КАРТОЧЕК
 let selectedCardImage = null;
 let selectedCardName = null;
 
+// ССЫЛКИ НА КАРТОЧКИ
 const cardImages = {
     "1": "https://raw.githubusercontent.com/sery2013/kast-card/main/Bitcoin-Black-Card.png",
     "2": "https://raw.githubusercontent.com/sery2013/kast-card/main/Founders-Edition.png",
@@ -420,7 +422,7 @@ function renderAll(ctx, canvas, avatarImg) {
     ctx.fillText(bioText, 205, bioY + 28);
     ctx.restore();
     
-    // Соцсети
+    // Соцсети (ИСПРАВЛЕНО: Сдвинуты влево и плотнее друг к другу)
     ctx.save();
     const sY = bioY + 145;
     ctx.font = "14px Fredoka"; ctx.fillStyle = colorMainText;
@@ -458,10 +460,11 @@ function renderAll(ctx, canvas, avatarImg) {
         }
         ctx.restore();
     };
+    // Изменены координаты X для плотного выравнивания
     drawIcon(185, sY, colorAccent, 'x'); ctx.fillText("Twitter", 207, sY);
-    drawIcon(285, sY, colorAccent, 'tg'); ctx.fillText("Telegram", 307, sY);
-    drawIcon(395, sY, colorAccent, 'dc'); ctx.fillText("Discord", 417, sY);
-    ctx.fillText("🌐 kast.xyz", 505, sY);
+    drawIcon(265, sY, colorAccent, 'tg'); ctx.fillText("Telegram", 287, sY);
+    drawIcon(345, sY, colorAccent, 'dc'); ctx.fillText("Discord", 367, sY);
+    ctx.fillText("🌐 kast.xyz", 430, sY);
     ctx.restore();
     
     // QR код
