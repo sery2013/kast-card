@@ -12,7 +12,7 @@ let mouseY = 0;
 let selectedCardImage = null;
 let selectedCardName = null;
 
-// ССЫЛКИ НА КАРТОЧКИ (ПРОВЕРЬ ЧТО ФАЙЛЫ НА GITHUB ИМЕЮТ ЭТО ЖЕ РАСШИРЕНИЕ .png)
+// ССЫЛКИ НА КАРТОЧКИ (PNG)
 const cardImages = {
     "1": "https://raw.githubusercontent.com/sery2013/kast-card/main/Bitcoin-Black-Card.png",
     "2": "https://raw.githubusercontent.com/sery2013/kast-card/main/Founders-Edition.png",
@@ -44,9 +44,10 @@ function playSound(id, stop = false) {
     }
 }
 
+// Инициализация выбора карточек
 function initCardSelector() {
     const options = document.querySelectorAll('.card-option');
-    loadCardImage("1"); // Загружаем первую по умолчанию
+    loadCardImage("1");
     
     options.forEach(option => {
         option.addEventListener('click', () => {
@@ -60,37 +61,30 @@ function initCardSelector() {
     });
 }
 
+// Загрузка изображения карты
 function loadCardImage(cardId) {
     const imgUrl = cardImages[cardId];
     if (!imgUrl) return;
     
     const img = new Image();
     img.crossOrigin = "anonymous";
-    
-    // Если картинка уже была загружена ранее, браузер возьмет её из кэша, 
-    // но нам нужно обновить selectedCardImage и перерисовать
     img.onload = () => {
         selectedCardImage = img;
         console.log(`✅ Card ${cardId} loaded`);
         
-        // Перерисовываем, если карточка уже видна на экране
+        // Перерисовываем canvas, если он виден
         const canvas = document.getElementById("cardCanvas");
         if (canvas && canvas.style.display !== "none") {
             const ctx = canvas.getContext("2d");
-            // Если идет генерация, renderAll все равно запущен в цикле startLoop,
-            // поэтому он сам подхватит новую картинку на следующем кадре.
-            // Но если генерация еще не началась (карточка пустая), рисуем сразу.
             if (!animationId) {
                 renderAll(ctx, canvas, currentAvatarImg);
             }
         }
     };
-    
     img.onerror = () => {
-        console.error(`❌ Ошибка загрузки: ${imgUrl}. Проверь расширение файла на GitHub.`);
+        console.error(`❌ Failed to load card ${cardId}`);
         selectedCardImage = null;
     };
-    
     img.src = imgUrl;
 }
 
@@ -150,8 +144,25 @@ function generateCard() {
     
     const ctx = canvas.getContext("2d");
     if (particles.length === 0) initDigitalFlow();
+    if (animationId) cancelAnimationFrame(animationId);
     
-    // Запускаем цикл анимации
+    const avatarInput = document.getElementById("avatar");
+    
+    if (avatarInput.files && avatarInput.files[0]) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+                currentAvatarImg = img;
+                startLoop();
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(avatarInput.files[0]);
+    } else {
+        startLoop();
+    }
+    
     function startLoop() {
         function frame() {
             renderAll(ctx, canvas, currentAvatarImg);
@@ -160,7 +171,6 @@ function generateCard() {
         animationId = requestAnimationFrame(frame);
     }
     
-    startLoop();
     initTilt();
 }
 
@@ -240,7 +250,6 @@ function renderAll(ctx, canvas, avatarImg) {
     // === 2. ФОНОВАЯ КАРТИНКА (ЗАДНИЙ ПЛАН) ===
     if (selectedCardImage) {
         ctx.save();
-        // Растягиваем фон на весь размер карточки
         ctx.drawImage(selectedCardImage, 0, 0, canvas.width, canvas.height);
         ctx.restore();
     } else {
@@ -248,8 +257,7 @@ function renderAll(ctx, canvas, avatarImg) {
         ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
     
-    // === 3. ЭЛЕМЕНТЫ ПОВЕРХ ФОНА ===
-    // Эффекты (градиенты)
+    // === 3. ЭФФЕКТЫ ПОВЕРХ ФОНА ===
     const topGrad = ctx.createRadialGradient(canvas.width, 0, 50, canvas.width, 0, 400);
     topGrad.addColorStop(0, isDark ? 'rgba(0, 242, 255, 0.15)' : 'rgba(0, 136, 170, 0.15)');
     topGrad.addColorStop(1, 'rgba(0, 242, 255, 0)');
@@ -289,7 +297,7 @@ function renderAll(ctx, canvas, avatarImg) {
     }
     ctx.restore();
     
-    // Аватар
+    // === 4. АВАТАР (ПРОВЕРЕНО!) ===
     const avX = 25, avY = 70, avS = 140;
     ctx.save();
     ctx.strokeStyle = colorAccent;
@@ -297,11 +305,13 @@ function renderAll(ctx, canvas, avatarImg) {
     ctx.strokeRect(avX, avY, avS, avS);
     
     if (avatarImg) {
+        // Глитч эффект на аватаре во время генерации
         if (isGenerating && Math.random() > 0.85) {
             ctx.globalAlpha = 0.5;
             ctx.drawImage(avatarImg, avX + 5, avY, avS - 2, avS - 2);
             ctx.globalAlpha = 1;
         }
+        // Основная отрисовка аватара
         ctx.drawImage(avatarImg, avX + 1, avY + 1, avS - 2, avS - 2);
     } else {
         ctx.fillStyle = colorEmptyAvatar;
@@ -444,7 +454,6 @@ function renderAll(ctx, canvas, avatarImg) {
         }
         ctx.restore();
     };
-    // Сдвинутые координаты, чтобы не наезжали на VISA
     drawIcon(185, sY, colorAccent, 'x'); ctx.fillText("Twitter", 207, sY);
     drawIcon(260, sY, colorAccent, 'tg'); ctx.fillText("Telegram", 282, sY);
     drawIcon(360, sY, colorAccent, 'dc'); ctx.fillText("Discord", 382, sY);
