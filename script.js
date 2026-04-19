@@ -69,10 +69,15 @@ function loadCardImage(cardId) {
     img.onload = () => {
         selectedCardImage = img;
         console.log(`✅ Card ${cardId} (${selectedCardName}) loaded`);
+        
+        // === ИСПРАВЛЕНИЕ: ПЕРЕРИСОВЫВАЕМ CANVAS ЕСЛИ ОН ВИДИМ ===
         const canvas = document.getElementById("cardCanvas");
         if (canvas && canvas.style.display !== "none") {
             const ctx = canvas.getContext("2d");
-            renderAll(ctx, canvas, currentAvatarImg);
+            // Если идет генерация - не прерываем анимацию
+            if (!isGenerating) {
+                renderAll(ctx, canvas, currentAvatarImg);
+            }
         }
     };
     img.onerror = () => {
@@ -244,7 +249,6 @@ function renderAll(ctx, canvas, avatarImg) {
     // === 2. РИСУЕМ ФОНОВУЮ КАРТУ ВНУТРИ МАСКИ (НА ЗАДНЕМ ПЛАНЕ) ===
     if (selectedCardImage) {
         ctx.save();
-        // Растягиваем фон на весь canvas
         ctx.drawImage(selectedCardImage, 0, 0, canvas.width, canvas.height);
         ctx.restore();
     } else {
@@ -422,7 +426,7 @@ function renderAll(ctx, canvas, avatarImg) {
     ctx.fillText(bioText, 205, bioY + 28);
     ctx.restore();
     
-    // Соцсети (ИСПРАВЛЕНО: Увеличены отступы между иконками)
+    // Соцсети
     ctx.save();
     const sY = bioY + 145;
     ctx.font = "14px Fredoka"; ctx.fillStyle = colorMainText;
@@ -460,11 +464,10 @@ function renderAll(ctx, canvas, avatarImg) {
         }
         ctx.restore();
     };
-    // Исправлены координаты X
     drawIcon(185, sY, colorAccent, 'x'); ctx.fillText("Twitter", 207, sY);
-    drawIcon(260, sY, colorAccent, 'tg'); ctx.fillText("Telegram", 282, sY); // Сдвинул Telegram
-    drawIcon(360, sY, colorAccent, 'dc'); ctx.fillText("Discord", 382, sY);  // Сдвинул Discord
-    ctx.fillText("🌐 kast.xyz", 455, sY);                                     // Сдвинул kast.xyz
+    drawIcon(260, sY, colorAccent, 'tg'); ctx.fillText("Telegram", 282, sY);
+    drawIcon(360, sY, colorAccent, 'dc'); ctx.fillText("Discord", 382, sY);
+    ctx.fillText("🌐 kast.xyz", 455, sY);
     ctx.restore();
     
     // QR код
