@@ -12,20 +12,20 @@ let mouseY = 0;
 let selectedCardImage = null;
 let selectedCardName = null;
 
-// ССЫЛКИ НА КАРТОЧКИ
+// ССЫЛКИ НА КАРТОЧКИ (WEBP формат)
 const cardImages = {
-    "1": "https://raw.githubusercontent.com/sery2013/kast-card/main/Bitcoin-Black-Card.png",
-    "2": "https://raw.githubusercontent.com/sery2013/kast-card/main/Founders-Edition.png",
-    "3": "https://raw.githubusercontent.com/sery2013/kast-card/main/K-Card.png",
-    "4": "https://raw.githubusercontent.com/sery2013/kast-card/main/Solana-Card.png",
-    "5": "https://raw.githubusercontent.com/sery2013/kast-card/main/Solana-Gold-Card.png",
-    "6": "https://raw.githubusercontent.com/sery2013/kast-card/main/Solana-Illuma-Card.png",
-    "7": "https://raw.githubusercontent.com/sery2013/kast-card/main/Solana-Solid-Gold-Card.png",
-    "8": "https://raw.githubusercontent.com/sery2013/kast-card/main/X-Card.png",
-    "9": "https://raw.githubusercontent.com/sery2013/kast-card/main/design-card.png",
-    "10": "https://raw.githubusercontent.com/sery2013/kast-card/main/pengu-black.png",
-    "11": "https://raw.githubusercontent.com/sery2013/kast-card/main/pengu-gold.png",
-    "12": "https://raw.githubusercontent.com/sery2013/kast-card/main/pengu-white.png"
+    "1": "https://raw.githubusercontent.com/sery2013/kast-card/main/Bitcoin-Black-Card.webp",
+    "2": "https://raw.githubusercontent.com/sery2013/kast-card/main/Founders-Edition.webp",
+    "3": "https://raw.githubusercontent.com/sery2013/kast-card/main/K-Card.webp",
+    "4": "https://raw.githubusercontent.com/sery2013/kast-card/main/Solana-Card.webp",
+    "5": "https://raw.githubusercontent.com/sery2013/kast-card/main/Solana-Gold-Card.webp",
+    "6": "https://raw.githubusercontent.com/sery2013/kast-card/main/Solana-Illuma-Card.webp",
+    "7": "https://raw.githubusercontent.com/sery2013/kast-card/main/Solana-Solid-Gold-Card.webp",
+    "8": "https://raw.githubusercontent.com/sery2013/kast-card/main/X-Card.webp",
+    "9": "https://raw.githubusercontent.com/sery2013/kast-card/main/design-card.webp",
+    "10": "https://raw.githubusercontent.com/sery2013/kast-card/main/pengu-black.webp",
+    "11": "https://raw.githubusercontent.com/sery2013/kast-card/main/pengu-gold.webp",
+    "12": "https://raw.githubusercontent.com/sery2013/kast-card/main/pengu-white.webp"
 };
 
 window.addEventListener('mousemove', (e) => {
@@ -422,7 +422,7 @@ function renderAll(ctx, canvas, avatarImg) {
     ctx.fillText(bioText, 205, bioY + 28);
     ctx.restore();
     
-    // Соцсети (ИСПРАВЛЕНО: Сдвинуты влево и плотнее друг к другу)
+    // Соцсети (ИСПРАВЛЕНО: Увеличены отступы между иконками)
     ctx.save();
     const sY = bioY + 145;
     ctx.font = "14px Fredoka"; ctx.fillStyle = colorMainText;
@@ -460,11 +460,11 @@ function renderAll(ctx, canvas, avatarImg) {
         }
         ctx.restore();
     };
-    // Изменены координаты X для плотного выравнивания
+    // Исправлены координаты X
     drawIcon(185, sY, colorAccent, 'x'); ctx.fillText("Twitter", 207, sY);
-    drawIcon(265, sY, colorAccent, 'tg'); ctx.fillText("Telegram", 287, sY);
-    drawIcon(345, sY, colorAccent, 'dc'); ctx.fillText("Discord", 367, sY);
-    ctx.fillText("🌐 kast.xyz", 430, sY);
+    drawIcon(260, sY, colorAccent, 'tg'); ctx.fillText("Telegram", 282, sY); // Сдвинул Telegram
+    drawIcon(360, sY, colorAccent, 'dc'); ctx.fillText("Discord", 382, sY);  // Сдвинул Discord
+    ctx.fillText("🌐 kast.xyz", 455, sY);                                     // Сдвинул kast.xyz
     ctx.restore();
     
     // QR код
