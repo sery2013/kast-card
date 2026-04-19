@@ -12,20 +12,20 @@ let mouseY = 0;
 let selectedCardImage = null;
 let selectedCardName = null;
 
-// ССЫЛКИ НА КАРТОЧКИ (WEBP формат)
+// ССЫЛКИ НА КАРТОЧКИ (ПРОВЕРЬ ЧТО ФАЙЛЫ НА GITHUB ИМЕЮТ ЭТО ЖЕ РАСШИРЕНИЕ .png)
 const cardImages = {
-    "1": "https://raw.githubusercontent.com/sery2013/kast-card/main/Bitcoin-Black-Card.webp",
-    "2": "https://raw.githubusercontent.com/sery2013/kast-card/main/Founders-Edition.webp",
-    "3": "https://raw.githubusercontent.com/sery2013/kast-card/main/K-Card.webp",
-    "4": "https://raw.githubusercontent.com/sery2013/kast-card/main/Solana-Card.webp",
-    "5": "https://raw.githubusercontent.com/sery2013/kast-card/main/Solana-Gold-Card.webp",
-    "6": "https://raw.githubusercontent.com/sery2013/kast-card/main/Solana-Illuma-Card.webp",
-    "7": "https://raw.githubusercontent.com/sery2013/kast-card/main/Solana-Solid-Gold-Card.webp",
-    "8": "https://raw.githubusercontent.com/sery2013/kast-card/main/X-Card.webp",
-    "9": "https://raw.githubusercontent.com/sery2013/kast-card/main/design-card.webp",
-    "10": "https://raw.githubusercontent.com/sery2013/kast-card/main/pengu-black.webp",
-    "11": "https://raw.githubusercontent.com/sery2013/kast-card/main/pengu-gold.webp",
-    "12": "https://raw.githubusercontent.com/sery2013/kast-card/main/pengu-white.webp"
+    "1": "https://raw.githubusercontent.com/sery2013/kast-card/main/Bitcoin-Black-Card.png",
+    "2": "https://raw.githubusercontent.com/sery2013/kast-card/main/Founders-Edition.png",
+    "3": "https://raw.githubusercontent.com/sery2013/kast-card/main/K-Card.png",
+    "4": "https://raw.githubusercontent.com/sery2013/kast-card/main/Solana-Card.png",
+    "5": "https://raw.githubusercontent.com/sery2013/kast-card/main/Solana-Gold-Card.png",
+    "6": "https://raw.githubusercontent.com/sery2013/kast-card/main/Solana-Illuma-Card.png",
+    "7": "https://raw.githubusercontent.com/sery2013/kast-card/main/Solana-Solid-Gold-Card.png",
+    "8": "https://raw.githubusercontent.com/sery2013/kast-card/main/X-Card.png",
+    "9": "https://raw.githubusercontent.com/sery2013/kast-card/main/design-card.png",
+    "10": "https://raw.githubusercontent.com/sery2013/kast-card/main/pengu-black.png",
+    "11": "https://raw.githubusercontent.com/sery2013/kast-card/main/pengu-gold.png",
+    "12": "https://raw.githubusercontent.com/sery2013/kast-card/main/pengu-white.png"
 };
 
 window.addEventListener('mousemove', (e) => {
@@ -46,7 +46,7 @@ function playSound(id, stop = false) {
 
 function initCardSelector() {
     const options = document.querySelectorAll('.card-option');
-    loadCardImage("1");
+    loadCardImage("1"); // Загружаем первую по умолчанию
     
     options.forEach(option => {
         option.addEventListener('click', () => {
@@ -66,24 +66,31 @@ function loadCardImage(cardId) {
     
     const img = new Image();
     img.crossOrigin = "anonymous";
+    
+    // Если картинка уже была загружена ранее, браузер возьмет её из кэша, 
+    // но нам нужно обновить selectedCardImage и перерисовать
     img.onload = () => {
         selectedCardImage = img;
-        console.log(`✅ Card ${cardId} (${selectedCardName}) loaded`);
+        console.log(`✅ Card ${cardId} loaded`);
         
-        // === ИСПРАВЛЕНИЕ: ПЕРЕРИСОВЫВАЕМ CANVAS ЕСЛИ ОН ВИДИМ ===
+        // Перерисовываем, если карточка уже видна на экране
         const canvas = document.getElementById("cardCanvas");
         if (canvas && canvas.style.display !== "none") {
             const ctx = canvas.getContext("2d");
-            // Если идет генерация - не прерываем анимацию
-            if (!isGenerating) {
+            // Если идет генерация, renderAll все равно запущен в цикле startLoop,
+            // поэтому он сам подхватит новую картинку на следующем кадре.
+            // Но если генерация еще не началась (карточка пустая), рисуем сразу.
+            if (!animationId) {
                 renderAll(ctx, canvas, currentAvatarImg);
             }
         }
     };
+    
     img.onerror = () => {
-        console.error(`❌ Failed to load card ${cardId}`);
+        console.error(`❌ Ошибка загрузки: ${imgUrl}. Проверь расширение файла на GitHub.`);
         selectedCardImage = null;
     };
+    
     img.src = imgUrl;
 }
 
@@ -143,25 +150,8 @@ function generateCard() {
     
     const ctx = canvas.getContext("2d");
     if (particles.length === 0) initDigitalFlow();
-    if (animationId) cancelAnimationFrame(animationId);
     
-    const avatarInput = document.getElementById("avatar");
-    
-    if (avatarInput.files && avatarInput.files[0]) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const img = new Image();
-            img.onload = () => {
-                currentAvatarImg = img;
-                startLoop();
-            };
-            img.src = e.target.result;
-        };
-        reader.readAsDataURL(avatarInput.files[0]);
-    } else {
-        startLoop();
-    }
-    
+    // Запускаем цикл анимации
     function startLoop() {
         function frame() {
             renderAll(ctx, canvas, currentAvatarImg);
@@ -170,6 +160,7 @@ function generateCard() {
         animationId = requestAnimationFrame(frame);
     }
     
+    startLoop();
     initTilt();
 }
 
@@ -241,14 +232,15 @@ function renderAll(ctx, canvas, avatarImg) {
     ctx.save();
     ctx.translate(glitchX, glitchY);
     
-    // === 1. СОЗДАЁМ МАСКУ С ЗАКРУГЛЕННЫМИ УГЛАМИ ===
+    // === 1. МАСКА С ЗАКРУГЛЕННЫМИ УГЛАМИ ===
     ctx.beginPath();
     ctx.roundRect(0, 0, canvas.width, canvas.height, 20); 
     ctx.clip();
     
-    // === 2. РИСУЕМ ФОНОВУЮ КАРТУ ВНУТРИ МАСКИ (НА ЗАДНЕМ ПЛАНЕ) ===
+    // === 2. ФОНОВАЯ КАРТИНКА (ЗАДНИЙ ПЛАН) ===
     if (selectedCardImage) {
         ctx.save();
+        // Растягиваем фон на весь размер карточки
         ctx.drawImage(selectedCardImage, 0, 0, canvas.width, canvas.height);
         ctx.restore();
     } else {
@@ -256,7 +248,7 @@ function renderAll(ctx, canvas, avatarImg) {
         ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
     
-    // === 3. ВСЕ ОСТАЛЬНЫЕ ЭЛЕМЕНТЫ РИСУЮТСЯ ПОВЕРХ ФОНА (ТОЖЕ ВНУТРИ МАСКИ) ===
+    // === 3. ЭЛЕМЕНТЫ ПОВЕРХ ФОНА ===
     // Эффекты (градиенты)
     const topGrad = ctx.createRadialGradient(canvas.width, 0, 50, canvas.width, 0, 400);
     topGrad.addColorStop(0, isDark ? 'rgba(0, 242, 255, 0.15)' : 'rgba(0, 136, 170, 0.15)');
@@ -293,18 +285,6 @@ function renderAll(ctx, canvas, avatarImg) {
     for (let x = 0; x < canvas.width; x += 30) {
         for (let y = 0; y < canvas.height; y += 30) {
             ctx.beginPath(); ctx.arc(x, y, 0.8, 0, Math.PI * 2); ctx.fill();
-        }
-    }
-    ctx.fillStyle = isDark ? "rgba(0, 242, 255, 0.04)" : "rgba(0, 136, 170, 0.04)";
-    ctx.font = "bold 40px Fredoka";
-    const symbols = ["()", "KAST", "*", "◇"];
-    for (let i = 0; i < 10; i++) {
-        for (let j = 0; j < 6; j++) {
-            ctx.save();
-            ctx.translate(i * 120, j * 90);
-            ctx.rotate(-Math.PI / 10);
-            ctx.fillText(symbols[(i + j) % symbols.length], 0, 0);
-            ctx.restore();
         }
     }
     ctx.restore();
@@ -426,7 +406,7 @@ function renderAll(ctx, canvas, avatarImg) {
     ctx.fillText(bioText, 205, bioY + 28);
     ctx.restore();
     
-    // Соцсети
+    // Соцсети (Исправленные отступы)
     ctx.save();
     const sY = bioY + 145;
     ctx.font = "14px Fredoka"; ctx.fillStyle = colorMainText;
@@ -464,6 +444,7 @@ function renderAll(ctx, canvas, avatarImg) {
         }
         ctx.restore();
     };
+    // Сдвинутые координаты, чтобы не наезжали на VISA
     drawIcon(185, sY, colorAccent, 'x'); ctx.fillText("Twitter", 207, sY);
     drawIcon(260, sY, colorAccent, 'tg'); ctx.fillText("Telegram", 282, sY);
     drawIcon(360, sY, colorAccent, 'dc'); ctx.fillText("Discord", 382, sY);
